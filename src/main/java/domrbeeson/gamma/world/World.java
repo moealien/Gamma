@@ -25,10 +25,7 @@ import domrbeeson.gamma.world.terrain.TerrainGenerator;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unloadable, Viewable, Saveable {
 
@@ -40,13 +37,12 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     private final MinecraftServer server;
     private final Scheduler scheduler = new Scheduler();
     private final WorldManager manager;
-    private final ThreadPoolExecutor threadPool;
+    private final ThreadPoolExecutor chunkThreadPool;
     private final List<Player> viewers = new ArrayList<>();
-    private final Map<Long, Chunk> loadedChunks = new ConcurrentHashMap<>();
+    private final Map<Long, CompletableFuture<Chunk>> chunks = new ConcurrentHashMap<>();
     private final String name;
     private final WorldFormat format;
     private final TerrainGenerator generator;
-    private final Map<Long, CompletableFuture<Chunk>> chunksCurrentlyLoading = new ConcurrentHashMap<>();
     private final long timeInFile;
     private final RegisteredEventListener<PlayerMoveEvent> playerMoveListener;
     private final CompletableFuture<Void> loadingFuture = new CompletableFuture<>();
@@ -56,10 +52,10 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     private CompletableFuture<Void> unloadFuture = null;
     private long time;
 
-    protected World(MinecraftServer server, WorldManager manager, ThreadPoolExecutor threadPool, String name, WorldFormat format, TerrainGenerator generator) throws InvalidWorldFormatException {
+    protected World(MinecraftServer server, WorldManager manager, ThreadPoolExecutor chunkThreadPool, String name, WorldFormat format, TerrainGenerator generator) throws InvalidWorldFormatException {
         this.server = server;
         this.manager = manager;
-        this.threadPool = threadPool;
+        this.chunkThreadPool = chunkThreadPool;
         this.name = name;
         this.format = format;
         this.generator = generator;
@@ -100,10 +96,10 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         viewers.forEach(player -> player.kick("World unloaded"));
         manager.removeWorld(this);
         playerMoveListener.stop();
-        CompletableFuture<?>[] futures = new CompletableFuture[loadedChunks.size()];
+        CompletableFuture<?>[] futures = new CompletableFuture[chunks.size()];
         int i = 0;
-        for (Chunk chunk : new HashSet<>(loadedChunks.values())) {
-            futures[i] = chunk.unload();
+        for (CompletableFuture<Chunk> chunk : new HashSet<>(chunks.values())) {
+            futures[i] = chunk.join().unload();
             i++;
         }
         unloadFuture = CompletableFuture.allOf(futures);
@@ -111,13 +107,13 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     }
 
     protected void addChunk(Chunk chunk) {
-        loadedChunks.put(chunk.getChunkIndex(), chunk);
+        chunks.put(chunk.getChunkIndex(), CompletableFuture.completedFuture(chunk));
     }
 
     protected CompletableFuture<Void> removeChunk(Chunk chunk) {
-        if (loadedChunks.remove(chunk.getChunkIndex()) != null) {
+        if (chunks.remove(chunk.getChunkIndex()) != null) {
             CompletableFuture<Void> future = new CompletableFuture<>();
-            threadPool.submit(new ChunkSaver(future, chunk));
+            chunkThreadPool.submit(new ChunkSaver(future, chunk));
             return future;
         }
         return CompletableFuture.completedFuture(null);
@@ -166,10 +162,6 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         return getChunk((int) pos.x() >> 4, (int) pos.z() >> 4);
     }
 
-    public Collection<Chunk> getLoadedChunks() {
-        return loadedChunks.values();
-    }
-
     @Nullable
     public Block getBlock(int x, int y, int z) {
         CompletableFuture<Chunk> future = getChunk(x >> 4, z >> 4);
@@ -189,33 +181,23 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         return true;
     }
 
-    @Nullable
-    public Chunk getLoadedChunk(int chunkX, int chunkZ) {
-        return loadedChunks.get(Chunk.getIndex(chunkX, chunkZ));
-    }
-
     public CompletableFuture<Chunk> getChunk(int chunkX, int chunkZ) {
         long index = Chunk.getIndex(chunkX, chunkZ);
-        Chunk chunk = loadedChunks.get(index);
+        CompletableFuture<Chunk> chunk = chunks.get(index);
         if (chunk != null) {
-            return CompletableFuture.completedFuture(chunk);
-        }
-        CompletableFuture<Chunk> f = chunksCurrentlyLoading.get(index);
-        if (f != null) {
-            return f;
+            return chunk;
         }
         final CompletableFuture<Chunk> future = new CompletableFuture<>();
-        chunksCurrentlyLoading.put(index, future);
+        chunks.put(index, future);
         future.thenAccept(c -> {
             c.getEntities().forEach(Entity::spawn);
-            chunksCurrentlyLoading.remove(index);
         });
-        threadPool.submit(new ChunkLoader(future, new Chunk.Builder(server, this, chunkX, chunkZ)));
+        chunkThreadPool.submit(new ChunkLoader(future, new Chunk.Builder(server, this, chunkX, chunkZ)));
         return future;
     }
 
     public boolean isChunkLoaded(int x, int z) {
-        return loadedChunks.containsKey(Chunk.getIndex(x, z));
+        return chunks.containsKey(Chunk.getIndex(x, z));
     }
 
     // https://minecraft.fandom.com/wiki/Tick#Game_process
@@ -223,8 +205,22 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     public void tick(long ticks) {
         time = timeInFile + ticks;
         scheduler.tick(ticks);
-        loadedChunks.values().forEach(chunk -> chunk.tick(ticks));
         super.tick(ticks);
+        synchronized (chunks) {
+            List<Future<?>> futures = new ArrayList<>();
+            for (CompletableFuture<Chunk> chunk : chunks.values()) {
+                futures.add(chunkThreadPool.submit(() -> {
+                    chunk.join().tick(ticks);
+                }));
+            }
+            try {
+                for (Future<?> future : futures) {
+                    future.get();
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public long getTime() {
@@ -348,14 +344,16 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         SortedSet<EntityInRange> foundEntities = new TreeSet<>();
         int chunkX = centre.getChunkX();
         int chunkZ = centre.getChunkZ();
+        CompletableFuture<Chunk> chunkFuture;
         Chunk chunk;
         List<Entity<?>> entitiesInChunk;
         for (int x = chunkX - chunkRange; x < chunkX + chunkRange; x++) {
             for (int z = chunkZ - chunkRange; z < chunkZ + chunkRange; z++) {
-                chunk = getLoadedChunk(x, z);
-                if (chunk == null) {
+                chunkFuture = getChunk(x, z);
+                if (chunkFuture == null) {
                     continue;
                 }
+                chunk = chunkFuture.join();
 
                 if (type == null) {
                     entitiesInChunk = chunk.getEntities();

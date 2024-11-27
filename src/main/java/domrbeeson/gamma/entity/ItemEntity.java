@@ -34,7 +34,7 @@ public class ItemEntity extends HealthEntity<EntityMetadata> {
     public void tick(long ticks) {
         long time = getWorld().getTime();
         if (time >= getSpawnTime() + TICKS_BEFORE_PICKUP) {
-            Chunk chunk = getWorld().getLoadedChunk(getPos().getChunkX(), getPos().getChunkZ());
+            Chunk chunk = getWorld().getChunk(getPos().getChunkX(), getPos().getChunkZ()).join();
             for (Player player : chunk.getViewers()) { // TODO check adjacent chunk if item is near a chunk border
                 if (getCollisionBox().collides(player.getCollisionBox())) {
                     player.getInventory().addItem(item);

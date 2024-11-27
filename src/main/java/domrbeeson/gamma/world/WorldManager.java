@@ -8,16 +8,12 @@ import domrbeeson.gamma.world.format.WorldFormat;
 import domrbeeson.gamma.world.terrain.TerrainGenerator;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.*;
+import java.util.concurrent.*;
 
 public final class WorldManager implements Unloadable, Tickable {
 
+    private final ThreadPoolExecutor worldThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private final ThreadPoolExecutor chunkThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool((int) Math.floor(Runtime.getRuntime().availableProcessors() * 1.5));
     private final Map<String, World> loadedWorlds = new HashMap<>();
     private final MinecraftServer server;
@@ -68,6 +64,7 @@ public final class WorldManager implements Unloadable, Tickable {
         Collection<World> worlds = new ArrayList<>(loadedWorlds.values());
         worlds.forEach(world -> world.unload().join());
         chunkThreadPool.shutdownNow();
+        worldThreadPool.shutdownNow();
         return CompletableFuture.completedFuture(null);
     }
 
@@ -77,6 +74,20 @@ public final class WorldManager implements Unloadable, Tickable {
 
     @Override
     public void tick(long ticks) {
-        loadedWorlds.values().forEach(world -> world.tick(ticks));
+        synchronized (loadedWorlds) {
+            List<Future<?>> futures = new ArrayList<>();
+            for (World world : loadedWorlds.values()) {
+                futures.add(worldThreadPool.submit(() -> {
+                    world.tick(ticks);
+                }));
+            }
+            try {
+                for (Future<?> future : futures) {
+                    future.get();
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

@@ -45,28 +45,28 @@ public abstract class BlockHandler {
         int y = middle.y();
         int z = middle.z();
 
-        Chunk chunk = world.getLoadedChunk((x + 1) >> 4, z >> 4);
+        Chunk chunk = world.getChunk((x + 1) >> 4, z >> 4).join();
         if (chunk != null) {
             chunk.scheduleBlockTick(Chunk.packChunkBlockCoords(x + 1, y, z), ticksInFuture);
         }
 
-        chunk = world.getLoadedChunk((x - 1) >> 4, z >> 4);
+        chunk = world.getChunk((x - 1) >> 4, z >> 4).join();
         if (chunk != null) {
             chunk.scheduleBlockTick(Chunk.packChunkBlockCoords(x - 1, y, z), ticksInFuture);
         }
 
-        chunk = world.getLoadedChunk(x >> 4, z >> 4);
+        chunk = world.getChunk(x >> 4, z >> 4).join();
         if (chunk != null) {
             chunk.scheduleBlockTick(Chunk.packChunkBlockCoords(x, y + 1, z), ticksInFuture);
             chunk.scheduleBlockTick(Chunk.packChunkBlockCoords(x, y - 1, z), ticksInFuture);
         }
 
-        chunk = world.getLoadedChunk(x >> 4, (z + 1) >> 4);
+        chunk = world.getChunk(x >> 4, (z + 1) >> 4).join();
         if (chunk != null) {
             chunk.scheduleBlockTick(Chunk.packChunkBlockCoords(x, y, z + 1), ticksInFuture);
         }
 
-        chunk = world.getLoadedChunk(x >> 4, (z - 1) >> 4);
+        chunk = world.getChunk(x >> 4, (z - 1) >> 4).join();
         if (chunk != null) {
             chunk.scheduleBlockTick(Chunk.packChunkBlockCoords(x, y, z - 1), ticksInFuture);
         }
