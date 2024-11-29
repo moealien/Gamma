@@ -67,7 +67,7 @@ public class SugarCaneBlockHandler extends StackBlockHandler {
     private boolean bottomBlockHasWater(World world, int x, int y, int z) {
         byte id;
 
-        Chunk chunk = world.getLoadedChunk((x + 1) >> 4, z >> 4);
+        Chunk chunk = world.getChunk((x + 1) >> 4, z >> 4).join();
         if (chunk != null) {
             id = chunk.getBlockId(x + 1, y, z);
             if (id == 8 || id == 9) {
@@ -75,7 +75,7 @@ public class SugarCaneBlockHandler extends StackBlockHandler {
             }
         }
 
-        chunk = world.getLoadedChunk((x - 1) >> 4, z >> 4);
+        chunk = world.getChunk((x - 1) >> 4, z >> 4).join();
         if (chunk != null) {
             id = chunk.getBlockId(x - 1, y, z);
             if (id == 8 || id == 9) {
@@ -83,7 +83,7 @@ public class SugarCaneBlockHandler extends StackBlockHandler {
             }
         }
 
-        chunk = world.getLoadedChunk(x >> 4, (z + 1) >> 4);
+        chunk = world.getChunk(x >> 4, (z + 1) >> 4).join();
         if (chunk != null) {
             id = chunk.getBlockId(x, y, z + 1);
             if (id == 8 || id == 9) {
@@ -91,7 +91,7 @@ public class SugarCaneBlockHandler extends StackBlockHandler {
             }
         }
 
-    chunk = world.getLoadedChunk(x >> 4, (z - 1) >> 4);
+    chunk = world.getChunk(x >> 4, (z - 1) >> 4).join();
         if (chunk != null) {
             id = chunk.getBlockId(x, y, z - 1);
             if (id == 8 || id == 9) {

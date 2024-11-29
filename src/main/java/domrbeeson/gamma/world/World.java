@@ -39,7 +39,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     private final WorldManager manager;
     private final ThreadPoolExecutor chunkThreadPool;
     private final List<Player> viewers = new ArrayList<>();
-    private final Map<Long, CompletableFuture<Chunk>> chunks = new ConcurrentHashMap<>();
+    private final Map<Long, CompletableFuture<Chunk>> chunks = new HashMap<>();
     private final String name;
     private final WorldFormat format;
     private final TerrainGenerator generator;
@@ -47,6 +47,8 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     private final RegisteredEventListener<PlayerMoveEvent> playerMoveListener;
     private final CompletableFuture<Void> loadingFuture = new CompletableFuture<>();
     private final Set<Chunk> saveChunks = new HashSet<>();
+    private final List<ChunkShard> chunkShards = new ArrayList<>();
+    private final Map<Chunk, ChunkShard> chunkShardMappings = new HashMap<>();
 
     private int viewDistance;
     private CompletableFuture<Void> unloadFuture = null;
@@ -96,10 +98,10 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         viewers.forEach(player -> player.kick("World unloaded"));
         manager.removeWorld(this);
         playerMoveListener.stop();
-        CompletableFuture<?>[] futures = new CompletableFuture[chunks.size()];
+        CompletableFuture<?>[] futures = new CompletableFuture[saveChunks.size()];
         int i = 0;
-        for (CompletableFuture<Chunk> chunk : new HashSet<>(chunks.values())) {
-            futures[i] = chunk.join().unload();
+        for (Chunk chunk : new HashSet<>(saveChunks)) {
+            futures[i] = chunk.unload();
             i++;
         }
         unloadFuture = CompletableFuture.allOf(futures);
@@ -108,12 +110,42 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
 
     protected void addChunk(Chunk chunk) {
         chunks.put(chunk.getChunkIndex(), CompletableFuture.completedFuture(chunk));
+        for (ChunkShard shard : chunkShards) {
+            if (shard.add(chunk)) {
+                return;
+            }
+        }
+        ChunkShard shard = new ChunkShard(chunk);
+        chunkShards.add(shard);
+        chunkShardMappings.put(chunk, shard);
+
+        Set<ChunkShard> mergedShards = new HashSet<>();
+        for (ChunkShard shard1 : chunkShards) {
+            for (ChunkShard shard2 : chunkShards) {
+                if (!mergedShards.contains(shard2) && shard2.merge(shard1)) {
+                    mergedShards.add(shard1);
+                    for (Chunk c : shard1.getChunks()) {
+                        chunkShardMappings.put(c, shard2);
+                    }
+                    break;
+                }
+            }
+        }
+        chunkShards.removeAll(mergedShards);
     }
 
     protected CompletableFuture<Void> removeChunk(Chunk chunk) {
-        if (chunks.remove(chunk.getChunkIndex()) != null) {
+        ChunkShard shard = chunkShardMappings.remove(chunk);
+        if (shard != null) {
+            shard.remove(chunk);
+            if (shard.getChunks().isEmpty()) {
+                chunkShards.remove(shard);
+            }
+        }
+        if (chunks.remove(chunk.getChunkIndex()) != null && saveChunks.contains(chunk)) {
             CompletableFuture<Void> future = new CompletableFuture<>();
             chunkThreadPool.submit(new ChunkSaver(future, chunk));
+            saveChunks.remove(chunk);
             return future;
         }
         return CompletableFuture.completedFuture(null);
@@ -206,20 +238,19 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         time = timeInFile + ticks;
         scheduler.tick(ticks);
         super.tick(ticks);
-        synchronized (chunks) {
-            List<Future<?>> futures = new ArrayList<>();
-            for (CompletableFuture<Chunk> chunk : chunks.values()) {
-                futures.add(chunkThreadPool.submit(() -> {
-                    chunk.join().tick(ticks);
-                }));
+
+        List<Future<?>> futures = new ArrayList<>();
+        for (ChunkShard shard : chunkShards) {
+            futures.add(chunkThreadPool.submit(() -> {
+                shard.tick(ticks);
+            }));
+        }
+        try {
+            for (Future<?> future : futures) {
+                future.get();
             }
-            try {
-                for (Future<?> future : futures) {
-                    future.get();
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
     }
 
@@ -379,10 +410,8 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
 
     public Set<Chunk> getAndClearChangedChunks() {
         Set<Chunk> changes;
-        synchronized (saveChunks) {
-            changes = new HashSet<>(saveChunks);
-            saveChunks.clear();
-        }
+        changes = new HashSet<>(saveChunks);
+        saveChunks.clear();
         return changes;
     }
 

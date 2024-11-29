@@ -74,20 +74,18 @@ public final class WorldManager implements Unloadable, Tickable {
 
     @Override
     public void tick(long ticks) {
-        synchronized (loadedWorlds) {
-            List<Future<?>> futures = new ArrayList<>();
-            for (World world : loadedWorlds.values()) {
-                futures.add(worldThreadPool.submit(() -> {
-                    world.tick(ticks);
-                }));
+        List<Future<?>> futures = new ArrayList<>();
+        for (World world : loadedWorlds.values()) {
+            futures.add(worldThreadPool.submit(() -> {
+                world.tick(ticks);
+            }));
+        }
+        try {
+            for (Future<?> future : futures) {
+                future.get();
             }
-            try {
-                for (Future<?> future : futures) {
-                    future.get();
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
     }
 }
