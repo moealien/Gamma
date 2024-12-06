@@ -1,26 +1,21 @@
 package domrbeeson.gamma;
 
 import domrbeeson.gamma.entity.Pos;
-import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.player.EntityInRange;
+import domrbeeson.gamma.player.Player;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public interface Viewable {
 
     boolean isViewing(Player player);
-    CompletableFuture<Void> addViewer(Player player);
-    CompletableFuture<Void> removeViewer(Player player);
-    default CompletableFuture<Void> removeAllViewers() {
+    void addViewer(Player player);
+    void removeViewer(Player player);
+    default void removeAllViewers() {
         Collection<Player> viewers = new ArrayList<>(getViewers());
-        CompletableFuture<?>[] futures = new CompletableFuture[viewers.size()];
-        int i = 0;
         for (Player viewer : viewers) {
-            futures[i] = removeViewer(viewer);
-            i++;
+            removeViewer(viewer);
         }
-        return CompletableFuture.allOf(futures);
     }
     List<Player> getViewers();
     boolean hasViewers();

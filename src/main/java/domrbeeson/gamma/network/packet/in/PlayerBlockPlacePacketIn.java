@@ -46,7 +46,7 @@ public class PlayerBlockPlacePacketIn extends WorldPacketIn {
             return;
         }
 
-        Block clickedBlock = player.getWorld().getChunk(clickedX >> 4, clickedZ >> 4).join().getBlock(clickedX, clickedY, clickedZ);
+        Block clickedBlock = player.getWorld().getChunk(clickedX >> 4, clickedZ >> 4).getBlock(clickedX, clickedY, clickedZ);
         BlockHandler clickedBlockHandler = getServer().getBlockHandlers().get(clickedBlock.id());
         if (clickedBlockHandler.onRightClick(getServer(), clickedBlock, player)) {
             return;
@@ -72,7 +72,7 @@ public class PlayerBlockPlacePacketIn extends WorldPacketIn {
         }
         short metadata = heldItem.metadata();
         player.getInventory().setHeldItem(Material.get(heldId, metadata).getItem(heldItem.amount() - 1));
-        player.getWorld().getChunk(placedX >> 4, placedZ >> 4).join().placeAsPlayer(player, placedX, placedY, placedZ, Material.get(heldId, heldItem.metadata()).blockId, (byte) metadata);
+        player.getWorld().getChunk(placedX >> 4, placedZ >> 4).placeAsPlayer(player, placedX, placedY, placedZ, Material.get(heldId, heldItem.metadata()).blockId, (byte) metadata);
     }
 
 }

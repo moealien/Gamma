@@ -2,7 +2,6 @@ package domrbeeson.gamma.world;
 
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.Tickable;
-import domrbeeson.gamma.Unloadable;
 import domrbeeson.gamma.Viewable;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.block.BlockHandlers;
@@ -23,10 +22,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Chunk implements Tickable, Unloadable, Viewable {
+public class Chunk implements Tickable, Viewable {
 
     private static final int RANDOM_TICK_BLOCKS_PER_SECTION = 3;
     private static final Map<Player, Set<Chunk>> PLAYERS_VIEWING_CHUNKS = new HashMap<>();
@@ -56,27 +54,28 @@ public class Chunk implements Tickable, Unloadable, Viewable {
     private boolean forceLoaded = false;
     private ChunkPacketOut chunkPacket = null;
     private long timeSinceZeroPlayers;
-    private @Nullable CompletableFuture<Void> unloadingFuture = null;
     private int compressionLevel = 1;
 
     protected Chunk(Builder builder) {
         this.server = builder.server;
-        blockHandlers = server.getBlockHandlers();
         this.world = builder.world;
+        if (!world.getFormat().readChunk(builder)) {
+            world.getGenerator().generate(builder);
+        }
+        blockHandlers = server.getBlockHandlers();
         this.chunkX = builder.x;
         this.chunkZ = builder.z;
         this.timeSinceZeroPlayers = world.getTime();
         this.blocks = builder.blocks;
-        this.metadata = builder.metadata;;
+        this.metadata = builder.metadata;
         this.blockAndSkyLight = builder.blockAndSkyLight;
         this.entities = builder.entities;
         this.tileEntities = builder.tileEntities;
+        this.chunkIndex = getIndex(chunkX, chunkZ);
 
         preChunkPacketLoad = new PreChunkPacketOut(chunkX, chunkZ, true);
         preChunkPacketUnload = new PreChunkPacketOut(chunkX, chunkZ, false);
         chunkPacket = new ChunkPacketOut(this, compressionLevel);
-        this.chunkIndex = getIndex(chunkX, chunkZ);
-        world.addChunk(this);
     }
 
     public World getWorld() {
@@ -354,35 +353,28 @@ public class Chunk implements Tickable, Unloadable, Viewable {
         tileEntities.remove(tile.packLocation());
     }
 
-    @Override
-    public CompletableFuture<Void> unload() {
-        if (unloadingFuture != null) {
-            return unloadingFuture;
+    protected void unload() {
+        if (forceLoaded) {
+            return;
         }
-        if (forceLoaded && !server.isRunning()) {
-            return CompletableFuture.completedFuture(null);
+
+        if (!server.isRunning()) {
+            return;
         }
+
         Entity<?> entity;
         while (!entities.isEmpty()) {
             entity = entities.removeFirst();
             entity.remove();
             entity.tick(-1); // TODO what is this for?
         }
-        CompletableFuture<?>[] futures = new CompletableFuture[] {
-                world.removeChunk(this),
-                removeAllViewers()
-        };
-        unloadingFuture = CompletableFuture.allOf(futures);
-        return unloadingFuture;
+
+        world.removeChunk(this);
+        removeAllViewers();
     }
 
     @Override
     public void tick(long ticks) {
-        if (unloadingFuture != null) {
-            return;
-        }
-
-        synchronized(scheduledBlockTicks) {
             List<Long> blocks = this.scheduledBlockTicks.get(ticks);
             if (blocks != null) {
                 blocks.forEach(packed -> {
@@ -398,9 +390,7 @@ public class Chunk implements Tickable, Unloadable, Viewable {
                 });
             }
             scheduledBlockTicks.remove(ticks);
-        }
 
-        synchronized (scheduledBlockChanges) {
             scheduledBlockChanges.values().forEach(event -> {
                 world.call(event);
                 if (event.isCancelled()) {
@@ -446,9 +436,7 @@ public class Chunk implements Tickable, Unloadable, Viewable {
                 BlockHandler.updateAdjacentBlocks(getBlock(x, y, z), 1);
             });
             scheduledBlockChanges.clear();
-        }
 
-        synchronized (scheduledBlockRightClicks) {
             scheduledBlockRightClicks.values().forEach(event -> {
                 world.call(event);
                 if (event.isCancelled()) {
@@ -460,16 +448,13 @@ public class Chunk implements Tickable, Unloadable, Viewable {
                 blockHandlers.get(getBlockId(Block.getChunkRelativeX(x), y, Block.getChunkRelativeZ(z))).onRightClick(server, getBlock(x, y, z), event.getPlayer());
             });
             scheduledBlockRightClicks.clear();
-        }
 
-        synchronized (entities) {
             for (int i = 0; i < entities.size(); i++) {
                 if (i >= entities.size()) { // Prevents concurrent modification exception
                     break;
                 }
                 entities.get(i).tick(ticks);
             }
-        }
 
         synchronized (tileEntities) {
             tileEntities.values().forEach(tile -> {
@@ -517,7 +502,7 @@ public class Chunk implements Tickable, Unloadable, Viewable {
     }
 
     @Override
-    public CompletableFuture<Void> addViewer(Player player) {
+    public void addViewer(Player player) {
         // TODO check if player is in range
 //        if (player.getPos().distance(new Pos(chunkX * X_SIZE + (X_SIZE / 2d), player.getPos().y(), chunkZ * X_SIZE + (Z_SIZE / 2d))) >= world.getPlayerViewDistance()) {
 //            return CompletableFuture.completedFuture(null);
@@ -526,20 +511,19 @@ public class Chunk implements Tickable, Unloadable, Viewable {
         if (!isViewing(player)) {
             viewers.add(player);
             player.sendPacket(preChunkPacketLoad);
-            world.getScheduler().runNextTick(ticks -> { // TODO This seems to fix most of the world holes, but need to make it more efficient
-                player.sendPacket(getChunkPacket());
-                entities.forEach(entity -> entity.addViewer(player));
-            });
+            player.sendPacket(getChunkPacket());
+//            world.getScheduler().runNextTick(ticks -> { // TODO This seems to fix most of the world holes, but need to make it more efficient
+//                entities.forEach(entity -> entity.addViewer(player));
+//            });
 
             Set<Chunk> playerChunks = PLAYERS_VIEWING_CHUNKS.getOrDefault(player, new HashSet<>());
             playerChunks.add(this);
             PLAYERS_VIEWING_CHUNKS.put(player, playerChunks);
         }
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> removeViewer(Player player) {
+    public void removeViewer(Player player) {
         if (viewers.remove(player)) {
             if (world.getServer().isRunning()) {
                 player.sendPacket(preChunkPacketUnload);
@@ -555,7 +539,6 @@ public class Chunk implements Tickable, Unloadable, Viewable {
                 PLAYERS_VIEWING_CHUNKS.put(player, playerChunks);
             }
         }
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override

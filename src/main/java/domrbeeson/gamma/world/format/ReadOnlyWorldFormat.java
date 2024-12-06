@@ -15,16 +15,6 @@ public class ReadOnlyWorldFormat implements WorldFormat {
     }
 
     @Override
-    public boolean exists(World world) {
-        return worldFormat.exists(world);
-    }
-
-    @Override
-    public void create(World world) {
-        throw new UnsupportedOperationException("Cannot create a read-only world!");
-    }
-
-    @Override
     public void load(World world) {
         worldFormat.load(world);
     }

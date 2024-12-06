@@ -17,7 +17,6 @@ import domrbeeson.gamma.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public abstract class Entity<T extends EntityMetadata> implements Tickable, Removable, Viewable {
 
@@ -133,7 +132,7 @@ public abstract class Entity<T extends EntityMetadata> implements Tickable, Remo
             return;
         }
         spawned = true;
-        world.getChunk(pos.getChunkX(), pos.getChunkZ()).join().addEntity(this);
+        world.getChunk(pos.getChunkX(), pos.getChunkZ()).addEntity(this);
         for (EntityInRange playerInRange : world.getViewersInRange(pos, CHUNK_VIEW_RANGE * Chunk.WIDTH)) {
             if (this instanceof Player && playerInRange.entity() == this) {
                 continue;
@@ -170,24 +169,18 @@ public abstract class Entity<T extends EntityMetadata> implements Tickable, Remo
     }
 
     @Override
-    public CompletableFuture<Void> addViewer(Player player) {
+    public void addViewer(Player player) {
         if (player != this && !isViewing(player)) {
             viewers.add(player);
             player.sendPacket(getSpawnPacket());
         }
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> removeViewer(Player player) {
+    public void removeViewer(Player player) {
         if (player != this && viewers.remove(player)) {
-//            System.out.println("Removing viewer '" + player.getUsername() + "' from " + (this instanceof Player ? ((Player) this).getUsername() : getClass().getSimpleName()));
-//            for (var thing : Thread.currentThread().getStackTrace()) {
-//                System.out.println(thing);
-//            }
             player.sendPacket(destroyPacket);
         }
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
@@ -242,7 +235,7 @@ public abstract class Entity<T extends EntityMetadata> implements Tickable, Remo
             if (MIN_ID > id) {
                 MIN_ID = id;
             }
-            world.getChunk(pos.getChunkX(), pos.getChunkZ()).join().removeEntity(this);
+            world.getChunk(pos.getChunkX(), pos.getChunkZ()).removeEntity(this);
             removeAllViewers();
             return;
         }
@@ -267,8 +260,8 @@ public abstract class Entity<T extends EntityMetadata> implements Tickable, Remo
                 int newChunkX = nextTickPos.getChunkX();
                 int newChunkZ = nextTickPos.getChunkZ();
                 if (nextTickWorld != null || oldChunkX != newChunkX || oldChunkZ != newChunkZ) {
-                    Chunk oldChunk = world.getChunk(oldChunkX, oldChunkZ).join();
-                    Chunk newChunk = world.getChunk(newChunkX, newChunkZ).join();
+                    Chunk oldChunk = world.getChunk(oldChunkX, oldChunkZ);
+                    Chunk newChunk = world.getChunk(newChunkX, newChunkZ);
                     EntityMoveChunkEvent moveChunkEvent = new EntityMoveChunkEvent(this, oldChunk, newChunk);
                     world.call(moveChunkEvent);
 

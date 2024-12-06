@@ -9,8 +9,6 @@ import domrbeeson.gamma.world.World;
 
 public interface WorldFormat extends Saveable {
 
-    boolean exists(World world);
-    void create(World world);
     void load(World world);
     boolean readChunk(Chunk.Builder chunk);
     void writeChunk(Chunk chunk);

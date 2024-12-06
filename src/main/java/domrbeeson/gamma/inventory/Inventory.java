@@ -13,7 +13,6 @@ import domrbeeson.gamma.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public abstract class Inventory implements Tickable, Viewable {
 
@@ -245,12 +244,8 @@ public abstract class Inventory implements Tickable, Viewable {
 
     @Override
     public void tick(long ticks) {
-        Map<Integer, PlayerWindowClickEvent> events;
-        synchronized (playerClicks) {
-            events = new HashMap<>(playerClicks);
-            playerClicks.clear();
-        }
-        events.values().forEach(this::onClick);
+        playerClicks.values().forEach(this::onClick);
+        playerClicks.clear();
 
         if (!updates.isEmpty()) {
             updates.forEach(invSlot -> {
@@ -276,7 +271,7 @@ public abstract class Inventory implements Tickable, Viewable {
     }
 
     @Override
-    public CompletableFuture<Void> addViewer(Player player) {
+    public void addViewer(Player player) {
         if (viewers.add(player)) {
             player.sendPacket(new WindowOpenPacketOut(this));
             onOpen(player);
@@ -289,16 +284,14 @@ public abstract class Inventory implements Tickable, Viewable {
                 player.sendPacket(packet);
             }
         }
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> removeViewer(Player player) {
+    public void removeViewer(Player player) {
         if (viewers.remove(player)) {
             player.sendPacket(new WindowClosePacketOut(player));
             onClose(player);
         }
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override

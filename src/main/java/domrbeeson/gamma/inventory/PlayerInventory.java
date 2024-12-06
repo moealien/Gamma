@@ -4,8 +4,6 @@ import domrbeeson.gamma.crafting.RecipeManager;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.player.Player;
 
-import java.util.concurrent.CompletableFuture;
-
 public class PlayerInventory extends CraftingInventory {
 
     public static final int HOTBAR_SLOTS = 9;
@@ -132,11 +130,11 @@ public class PlayerInventory extends CraftingInventory {
     }
 
     @Override
-    public CompletableFuture<Void> addViewer(Player player) {
+    public void addViewer(Player player) {
         if (!player.getUsername().equalsIgnoreCase(username)) {
             throw new UnsupportedOperationException("Player '" + player.getUsername() + "' cannot view the inventory of '" + username + "'.");
         }
-        return super.addViewer(player);
+        super.addViewer(player);
     }
 
     public short mapRawSlot(int rawSlot) {

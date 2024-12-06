@@ -80,7 +80,8 @@ public final class MinecraftServer extends EventGroup<Event.GlobalEvent> impleme
         call(event);
 
         System.out.println("Unloading " + worldManager.getWorlds().size() + " worlds");
-        worldManager.unload().thenAccept(a -> System.out.println("Unloaded worlds"));
+        worldManager.unload();
+        System.out.println("Unloaded worlds");
     }
 
     public boolean isRunning() {

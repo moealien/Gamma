@@ -44,7 +44,7 @@ public class PlayerDiggingPacketIn extends WorldPacketIn {
 //            return;
 //        }
 
-        Block block = player.getWorld().getChunk(x >> 4, z >> 4).join().getBlock(x, y, z);
+        Block block = player.getWorld().getChunk(x >> 4, z >> 4).getBlock(x, y, z);
         if (block.id() == 0) {
             return;
         }

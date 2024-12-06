@@ -72,15 +72,14 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
 
         server.getScheduler().scheduleTask(keepAliveTask);
 
-        builder.world.addViewer(this).thenAccept(a -> {
-            if (builder.joinMessage != null) {
-                server.broadcast(builder.joinMessage);
-            }
-            updateSurroundingChunks(builder.pos.getChunkX(), builder.pos.getChunkZ());
+        builder.world.addViewer(this);
+        if (builder.joinMessage != null) {
+            server.broadcast(builder.joinMessage);
+        }
+        updateSurroundingChunks(builder.pos.getChunkX(), builder.pos.getChunkZ());
 
-            inventory.addViewer(this);
-            loading.complete(null);
-        });
+        inventory.addViewer(this);
+        loading.complete(null);
     }
 
     public MinecraftServer getServer() {
@@ -290,12 +289,12 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
 
         for (int layer = 0; layer < viewDistance; layer++) {
             for (int x = xCentre - layer; x <= xCentre + layer; x++) {
-                world.getChunk(x, zCentre - layer).thenAccept(this::viewChunk);
-                world.getChunk(x, zCentre + layer).thenAccept(this::viewChunk);
+                viewChunk(world.getChunk(x, zCentre - layer));
+                viewChunk(world.getChunk(x, zCentre + layer));
             }
             for (int z = zCentre - layer; z <= zCentre + layer; z++) {
-                world.getChunk(xCentre - layer, z).thenAccept(this::viewChunk);
-                world.getChunk(xCentre + layer, z).thenAccept(this::viewChunk);
+                viewChunk(world.getChunk(xCentre - layer, z));
+                viewChunk(world.getChunk(xCentre + layer, z));
             }
         }
 
@@ -357,14 +356,14 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
         Inventory oldInv = openInventory;
         openInventory = inventory;
         if (oldInv != null) {
-            oldInv.removeViewer(this).join();
+            oldInv.removeViewer(this);
         }
         openInventory.addViewer(this);
     }
 
     public void closeInventory() {
         if (openInventory != null) {
-            openInventory.removeViewer(this).join();
+            openInventory.removeViewer(this);
             openInventory = null;
         }
         if (cursorItem.id() > 0) {

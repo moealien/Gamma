@@ -25,10 +25,8 @@ import domrbeeson.gamma.world.terrain.TerrainGenerator;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unloadable, Viewable, Saveable {
 
@@ -40,35 +38,28 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     private final MinecraftServer server;
     private final Scheduler scheduler = new Scheduler();
     private final WorldManager manager;
-    private final ThreadPoolExecutor threadPool;
     private final List<Player> viewers = new ArrayList<>();
     private final Map<Long, Chunk> loadedChunks = new ConcurrentHashMap<>();
     private final String name;
     private final WorldFormat format;
     private final TerrainGenerator generator;
-    private final Map<Long, CompletableFuture<Chunk>> chunksCurrentlyLoading = new ConcurrentHashMap<>();
     private final long timeInFile;
     private final RegisteredEventListener<PlayerMoveEvent> playerMoveListener;
-    private final CompletableFuture<Void> loadingFuture = new CompletableFuture<>();
     private final Set<Chunk> saveChunks = new HashSet<>();
 
     private int viewDistance;
-    private CompletableFuture<Void> unloadFuture = null;
     private long time;
 
-    protected World(MinecraftServer server, WorldManager manager, ThreadPoolExecutor threadPool, String name, WorldFormat format, TerrainGenerator generator) throws InvalidWorldFormatException {
+    protected World(MinecraftServer server, WorldManager manager, String name, WorldFormat format, TerrainGenerator generator) throws InvalidWorldFormatException {
         this.server = server;
         this.manager = manager;
-        this.threadPool = threadPool;
         this.name = name;
         this.format = format;
         this.generator = generator;
         this.viewDistance = Math.max(MINIMUM_CHUNK_RADIUS, MinecraftServer.SERVER_SETTINGS.getViewDistance());
 
-        if (!format.exists(this)) {
-            format.create(this);
-        }
         format.load(this);
+
         this.timeInFile = 0; // TODO load from world format
         this.time = 0;
 
@@ -83,44 +74,29 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
             });
         });
 
-        loadingFuture.complete(null);
-
         System.out.println("Loaded world '" + name + "' [Format: " + format.getClass().getSimpleName() + ", Generator: " + generator.getClass().getSimpleName() + ", View distance: " + viewDistance + ", Seed: " + format.getSeed() + "]");
     }
 
     @Override
-    public CompletableFuture<Void> unload() {
-        loadingFuture.join();
-        if (unloadFuture != null) {
-            return unloadFuture;
-        }
+    public void unload() {
         WorldUnloadEvent event = new WorldUnloadEvent(this);
         server.call(event);
         List<Player> viewers = new ArrayList<>(this.viewers);
         viewers.forEach(player -> player.kick("World unloaded"));
         manager.removeWorld(this);
         playerMoveListener.stop();
-        CompletableFuture<?>[] futures = new CompletableFuture[loadedChunks.size()];
-        int i = 0;
+
         for (Chunk chunk : new HashSet<>(loadedChunks.values())) {
-            futures[i] = chunk.unload();
-            i++;
+            chunk.unload();
         }
-        unloadFuture = CompletableFuture.allOf(futures);
-        return unloadFuture;
     }
 
-    protected void addChunk(Chunk chunk) {
-        loadedChunks.put(chunk.getChunkIndex(), chunk);
-    }
-
-    protected CompletableFuture<Void> removeChunk(Chunk chunk) {
+    protected boolean removeChunk(Chunk chunk) {
         if (loadedChunks.remove(chunk.getChunkIndex()) != null) {
-            CompletableFuture<Void> future = new CompletableFuture<>();
-            threadPool.submit(new ChunkSaver(future, chunk));
-            return future;
+            chunk.getWorld().getFormat().writeChunk(chunk);
+            return true;
         }
-        return CompletableFuture.completedFuture(null);
+        return false;
     }
 
 //    public void addEntity(Entity<?> entity) {
@@ -162,8 +138,9 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         this.viewDistance = viewDistance;
     }
 
-    public CompletableFuture<Chunk> getChunk(Pos pos) {
-        return getChunk((int) pos.x() >> 4, (int) pos.z() >> 4);
+    public Chunk getChunk(int chunkX, int chunkZ) {
+        long index = Chunk.getIndex(chunkX, chunkZ);
+        return loadedChunks.computeIfAbsent(index, _ -> new Chunk(new Chunk.Builder(server, this, chunkX, chunkZ)));
     }
 
     public Collection<Chunk> getLoadedChunks() {
@@ -172,9 +149,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
 
     @Nullable
     public Block getBlock(int x, int y, int z) {
-        CompletableFuture<Chunk> future = getChunk(x >> 4, z >> 4);
-        Chunk chunk = future.join();
-        return chunk.getBlock(x, y, z);
+        return getChunk(x >> 4, z >> 4).getBlock(x, y, z);
     }
 
     public boolean setBlock(int x, int y, int z, Material material) {
@@ -185,33 +160,13 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     }
 
     public final boolean setBlock(int x, int y, int z, byte id, byte metadata) {
-        getChunk(x >> 4, z >> 4).join().setBlock(x, y, z, id, metadata);
+        getChunk(x >> 4, z >> 4).setBlock(x, y, z, id, metadata);
         return true;
     }
 
     @Nullable
     public Chunk getLoadedChunk(int chunkX, int chunkZ) {
         return loadedChunks.get(Chunk.getIndex(chunkX, chunkZ));
-    }
-
-    public CompletableFuture<Chunk> getChunk(int chunkX, int chunkZ) {
-        long index = Chunk.getIndex(chunkX, chunkZ);
-        Chunk chunk = loadedChunks.get(index);
-        if (chunk != null) {
-            return CompletableFuture.completedFuture(chunk);
-        }
-        CompletableFuture<Chunk> f = chunksCurrentlyLoading.get(index);
-        if (f != null) {
-            return f;
-        }
-        final CompletableFuture<Chunk> future = new CompletableFuture<>();
-        chunksCurrentlyLoading.put(index, future);
-        future.thenAccept(c -> {
-            c.getEntities().forEach(Entity::spawn);
-            chunksCurrentlyLoading.remove(index);
-        });
-        threadPool.submit(new ChunkLoader(future, new Chunk.Builder(server, this, chunkX, chunkZ)));
-        return future;
     }
 
     public boolean isChunkLoaded(int x, int z) {
@@ -232,67 +187,57 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     }
 
     @Override
-    public CompletableFuture<Void> addViewer(Player player) {
+    public void addViewer(Player player) {
         if (isViewing(player)) {
-            return CompletableFuture.completedFuture(null);
+            return;
         }
 
-        return CompletableFuture.runAsync(() -> {
-            if (player.isLoading()) {
-                player.sendPacket(new LoginPacketOut(player.getEntityId(), format.getDimension()));
-            } else if (player.getProtocol() >= 12) { // Beta 1.6 test build 3
-                player.sendPacket(new PlayerRespawnPacketOut(format.getDimension()));
+        if (player.isLoading()) {
+            player.sendPacket(new LoginPacketOut(player.getEntityId(), format.getDimension()));
+        } else if (player.getProtocol() >= 12) { // Beta 1.6 test build 3
+            player.sendPacket(new PlayerRespawnPacketOut(format.getDimension()));
+        }
+
+        World oldWorld = player.getWorld();
+        if (oldWorld != this && oldWorld != null) {
+            oldWorld.removeViewer(player);
+        }
+
+        getEntitiesInChunkRange(null, player.getPos(), ENTITY_VIEW_DISTANCE_CHUNKS).forEach(entityInRange -> {
+            Entity<?> entity = entityInRange.entity();
+            entity.addViewer(player);
+            if (entity instanceof Player) {
+                player.addViewer((Player) entity);
             }
-            World oldWorld = player.getWorld();
-            if (oldWorld != this && oldWorld != null) {
-                oldWorld.removeViewer(player).join();
-            }
-            getEntitiesInChunkRange(null, player.getPos(), ENTITY_VIEW_DISTANCE_CHUNKS).forEach(entityInRange -> {
-                Entity<?> entity = entityInRange.entity();
-                entity.addViewer(player);
-                if (entity instanceof Player) {
-                    player.addViewer((Player) entity);
-                }
-            });
-            viewers.add(player);
-            sendInitialChunksToPlayer(player).join();
-            player.spawn();
         });
+
+        viewers.add(player);
+        sendInitialChunksToPlayer(player);
+        player.spawn();
     }
 
-    public CompletableFuture<Void> sendInitialChunksToPlayer(Player player) {
+    public void sendInitialChunksToPlayer(Player player) {
         Pos pos = player.getPos();
         int chunkX = pos.getChunkX();
         int chunkZ = pos.getChunkZ();
-        CompletableFuture<Chunk>[] futures = new CompletableFuture[INITIAL_CHUNK_RADIUS * 28];
-        int i = 0;
         for (int x = chunkX - INITIAL_CHUNK_RADIUS; x < chunkX + INITIAL_CHUNK_RADIUS; x++) {
             for (int z = chunkZ - INITIAL_CHUNK_RADIUS; z < chunkZ + INITIAL_CHUNK_RADIUS; z++) {
-                futures[i] = getChunk(x, z);
-                futures[i].thenAccept(chunk -> {
-                    chunk.addViewer(player);
-                });
-                i++;
+                getChunk(x, z).addViewer(player);
             }
         }
-        return CompletableFuture.allOf(futures);
     }
 
     @Override
-    public CompletableFuture<Void> removeViewer(Player player) {
+    public void removeViewer(Player player) {
         if (viewers.remove(player)) {
-            player.removeAllViewers().join();
+            player.removeAllViewers();
             getEntitiesInChunkRange(null, player.getPos(), ENTITY_VIEW_DISTANCE_CHUNKS).forEach(entityInRange -> entityInRange.entity().removeViewer(player));
             Collection<Chunk> chunks = new HashSet<>(Chunk.getPlayerViewingChunks(player));
             int i = 0;
-            CompletableFuture<?>[] futures = new CompletableFuture[chunks.size()];
             for (Chunk chunk : chunks) {
-                futures[i] = chunk.removeViewer(player);
-                i++;
+                chunk.removeViewer(player);
             }
-            return CompletableFuture.allOf(futures);
         }
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
@@ -380,11 +325,8 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     }
 
     public Set<Chunk> getAndClearChangedChunks() {
-        Set<Chunk> changes;
-        synchronized (saveChunks) {
-            changes = new HashSet<>(saveChunks);
-            saveChunks.clear();
-        }
+        Set<Chunk> changes = new HashSet<>(saveChunks);
+        saveChunks.clear();
         return changes;
     }
 

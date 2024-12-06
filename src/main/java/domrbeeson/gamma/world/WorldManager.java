@@ -12,13 +12,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public final class WorldManager implements Unloadable, Tickable {
 
-    private final ThreadPoolExecutor chunkThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool((int) Math.floor(Runtime.getRuntime().availableProcessors() * 1.5));
     private final Map<String, World> loadedWorlds = new HashMap<>();
     private final MinecraftServer server;
 
@@ -40,8 +36,7 @@ public final class WorldManager implements Unloadable, Tickable {
         World world = loadedWorlds.get(name);
         if (world == null) {
             try {
-                world = new World(server, this, chunkThreadPool, name, format, generator);
-                generator.load(world);
+                world = new World(server, this, name, format, generator);
             } catch (InvalidWorldFormatException e) {
                 e.printStackTrace();
                 return null;
@@ -64,11 +59,9 @@ public final class WorldManager implements Unloadable, Tickable {
     }
 
     @Override
-    public CompletableFuture<Void> unload() {
+    public void unload() {
         Collection<World> worlds = new ArrayList<>(loadedWorlds.values());
-        worlds.forEach(world -> world.unload().join());
-        chunkThreadPool.shutdownNow();
-        return CompletableFuture.completedFuture(null);
+        worlds.forEach(World::unload);
     }
 
     protected void removeWorld(World world) {

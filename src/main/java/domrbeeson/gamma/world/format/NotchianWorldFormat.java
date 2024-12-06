@@ -56,23 +56,12 @@ public abstract class NotchianWorldFormat implements WorldFormat {
     }
 
     @Override
-    public boolean exists(World world) {
-        return getLevelDat() != null;
-    }
-
-    @Override
-    public void create(World world) {
+    public void load(World world) {
+        this.world = world;
         getWorldFolder(world).mkdirs();
         getPlayersFolder(world).mkdirs();
         levelDat = new NBTLevelDat(getLevelDatFile(world), world.getName() ,this);
-        this.world = world;
         save();
-    }
-
-    @Override
-    public void load(World world) {
-        this.world = world;
-        levelDat = getLevelDat(world);
     }
 
     @Override
