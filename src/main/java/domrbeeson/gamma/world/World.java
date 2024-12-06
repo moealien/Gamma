@@ -93,7 +93,9 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
 
     protected boolean removeChunk(Chunk chunk) {
         if (loadedChunks.remove(chunk.getChunkIndex()) != null) {
-            chunk.getWorld().getFormat().writeChunk(chunk);
+            if (saveChunks.contains(chunk)) {
+                chunk.getWorld().getFormat().writeChunk(chunk);
+            }
             return true;
         }
         return false;
