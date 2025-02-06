@@ -4,7 +4,6 @@ import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.entity.Pos;
 import domrbeeson.gamma.entity.object.FallingBlockEntity;
-import domrbeeson.gamma.entity.object.ObjectEntity;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.network.packet.out.BlockChangePacketOut;
@@ -47,14 +46,7 @@ public class FallingBlockHandler extends BlockHandler {
         chunk.getViewers().forEach(viewer -> viewer.sendPacket(blockChangePacket));
         // TODO spawn falling block, temporarily just placing the sand at the lowest available Y
         if (lowestY >= 0) {
-            ObjectEntity entity;
-            if (block.id() == 12) {
-                entity = new FallingBlockEntity(block.world(), new Pos(x, y, z), Material.SAND.blockId);
-            } else {
-                entity = new FallingBlockEntity(block.world(), new Pos(x, y, z), Material.GRAVEL.blockId);
-            }
-            entity.spawn();
-            chunk.getWorld().getScheduler().runNextTick(ticks -> entity.remove());
+            new FallingBlockEntity(block.world(), new Pos(x + 0.5, y, z + 0.5), block.id() == 12 ? Material.SAND.blockId : Material.GRAVEL.blockId).spawn();
         }
         return true;
     }

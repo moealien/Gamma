@@ -130,16 +130,28 @@ public class Chunk implements Tickable, Viewable {
         byte relativeX = Block.getChunkRelativeX(x);
         byte relativeZ = Block.getChunkRelativeZ(z);
         // TODO if Y is above build limit, return air
+        byte id, meta, blockLight, skyLight;
+        if (y >= 0 && y < HEIGHT) {
+            id = getBlockId(relativeX, y, relativeZ);
+            meta = getBlockMetadata(relativeX, y, relativeZ);
+            blockLight = getBlockLight(relativeX, y, relativeZ);
+            skyLight = getSkyLight(relativeX, y, relativeZ);
+        } else {
+            id = 0;
+            meta = 0;
+            blockLight = 0;
+            skyLight = 0;
+        }
         return new Block(
                 world,
                 this,
                 x,
                 y,
                 z,
-                getBlockId(relativeX, y, relativeZ),
-                getBlockMetadata(relativeX, y, relativeZ),
-                getBlockLight(relativeX, y, relativeZ),
-                getSkyLight(relativeX, y, relativeZ)
+                id,
+                meta,
+                blockLight,
+                skyLight
         );
     }
 
@@ -256,6 +268,10 @@ public class Chunk implements Tickable, Viewable {
         List<Long> scheduled = scheduledBlockTicks.getOrDefault(futureTick, new ArrayList<>());
         scheduled.add(packChunkBlockCoords(event.getX(), event.getY(), event.getZ()));
         scheduledBlockTicks.put(futureTick, scheduled);
+    }
+
+    public boolean isInChunk(int x, int z) {
+        return x >> 4 == chunkX && z >> 4 == chunkZ;
     }
 
     public static long packChunkBlockCoords(int x, int y, int z) {
@@ -590,6 +606,10 @@ public class Chunk implements Tickable, Viewable {
             this.z = z;
         }
 
+        public boolean isInChunk(int x, int z) {
+            return x >> 4 == this.x && z >> 4 == this.z;
+        }
+
         public Builder block(byte x, int y, byte z, byte id) {
             return block(x, y, z, id, (byte) 0, (byte) 15, (byte) 15);
         }
@@ -613,6 +633,14 @@ public class Chunk implements Tickable, Viewable {
         public Builder tileEntity(TileEntity tileEntity) {
             tileEntities.put(tileEntity.packLocation(), tileEntity);
             return this;
+        }
+
+        public World getWorld() {
+            return world;
+        }
+
+        public int getId(byte x, int y, byte z) {
+            return blocks[x][y][z];
         }
     }
 

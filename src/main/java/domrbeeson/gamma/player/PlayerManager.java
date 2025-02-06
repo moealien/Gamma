@@ -80,6 +80,7 @@ public class PlayerManager implements Closeable, Runnable {
                 player = server.getWorldManager().getDefaultWorld().getFormat().readPlayer(builder);
             } catch (Exception e) {
                 connection.getWriter().send(version.features.protocol(), new PlayerKickPacketOut("Invalid player data!"));
+                e.printStackTrace();
                 return null;
             }
             PLAYERS_BY_USERNAME.put(username, player);

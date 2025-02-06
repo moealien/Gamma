@@ -3,7 +3,10 @@ package domrbeeson.gamma.item;
 import domrbeeson.gamma.crafting.CraftingRecipe;
 import domrbeeson.gamma.item.items.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public enum Material {
@@ -14,11 +17,11 @@ public enum Material {
     STONE(1),
     GRASS(2),
     DIRT(3),
-    COBBLESTONE(new Builder(4).itemCreator(CobblestoneItem::new)),
+    COBBLESTONE(builder(4).itemCreator(CobblestoneItem::new)),
     OAK_PLANKS(5),
     OAK_SAPLING(6),
-    SPRUCE_SAPLING(new Builder(6).metadata(1)),
-    BIRCH_SAPLING(new Builder(6).metadata(2)),
+    SPRUCE_SAPLING(builder(6).metadata(1)),
+    BIRCH_SAPLING(builder(6).metadata(2)),
     BEDROCK(7),
     WATER_FLOWING(8),
     WATER_SOURCE(9),
@@ -30,11 +33,11 @@ public enum Material {
     IRON_ORE(15),
     COAL_ORE(16),
     OAK_LOG(17),
-    SPRUCE_LOG(new Builder(17).metadata(1)),
-    BIRCH_LOG(new Builder(17).metadata(2)),
+    SPRUCE_LOG(builder(17).metadata(1)),
+    BIRCH_LOG(builder(17).metadata(2)),
     OAK_LEAVES(18),
-    SPRUCE_LEAVES(new Builder(18).metadata(1)),
-    BIRCH_LEAVES(new Builder(18).metadata(2)),
+    SPRUCE_LEAVES(builder(18).metadata(1)),
+    BIRCH_LEAVES(builder(18).metadata(2)),
     SPONGE(19),
     GLASS(20),
     LAPIS_ORE(21),
@@ -48,29 +51,29 @@ public enum Material {
     STICKY_PISTON(29),
     COBWEB(30),
     DEFAULT_FERN(31),
-    SHORT_GRASS(new Builder(31).metadata(1)),
-    FERN(new Builder(31).metadata(2)),
-    SNOW_FERN(new Builder(31).metadata(3)),
+    SHORT_GRASS(builder(31).metadata(1)),
+    FERN(builder(31).metadata(2)),
+    SNOW_FERN(builder(31).metadata(3)),
     DEAD_BUSH(32),
     // SHRUB
     PISTON(33),
     // PISTON_EXTENSION
     WHITE_WOOL(35),
-    ORANGE_WOOL(new Builder(35).metadata(1)),
-    MAGENTA_WOOL(new Builder(35).metadata(2)),
-    LIGHT_BLUE_WOOL(new Builder(35).metadata(3)),
-    YELLOW_WOOL(new Builder(35).metadata(4)),
-    LIME_WOOL(new Builder(35).metadata(5)),
-    PINK_WOOL(new Builder(35).metadata(6)),
-    DARK_GREY_WOOL(new Builder(35).metadata(7)),
-    GREY_WOOL(new Builder(35).metadata(8)),
-    CYAN_WOOL(new Builder(35).metadata(9)),
-    PURPLE_WOOL(new Builder(35).metadata(10)),
-    BLUE_WOOL(new Builder(35).metadata(11)),
-    BROWN_WOOL(new Builder(35).metadata(12)),
-    GREEN_WOOL(new Builder(35).metadata(13)),
-    RED_WOOL(new Builder(35).metadata(14)),
-    BLACK_WOOL(new Builder(35).metadata(15)),
+    ORANGE_WOOL(builder(35).metadata(1)),
+    MAGENTA_WOOL(builder(35).metadata(2)),
+    LIGHT_BLUE_WOOL(builder(35).metadata(3)),
+    YELLOW_WOOL(builder(35).metadata(4)),
+    LIME_WOOL(builder(35).metadata(5)),
+    PINK_WOOL(builder(35).metadata(6)),
+    DARK_GREY_WOOL(builder(35).metadata(7)),
+    GREY_WOOL(builder(35).metadata(8)),
+    CYAN_WOOL(builder(35).metadata(9)),
+    PURPLE_WOOL(builder(35).metadata(10)),
+    BLUE_WOOL(builder(35).metadata(11)),
+    BROWN_WOOL(builder(35).metadata(12)),
+    GREEN_WOOL(builder(35).metadata(13)),
+    RED_WOOL(builder(35).metadata(14)),
+    BLACK_WOOL(builder(35).metadata(15)),
     PISTON_EXTENSION(36),
     DANDELION(37),
     ROSE(38),
@@ -79,13 +82,13 @@ public enum Material {
     GOLD_BLOCK(41),
     IRON_BLOCK(42),
     STONE_DOUBLE_SLAB(43),
-    SANDSTONE_DOUBLE_SLAB(new Builder(43).metadata(1)),
-    OAK_DOUBLE_SLAB(new Builder(43).metadata(2)),
-    COBBLESTONE_DOUBLE_SLAB(new Builder(43).metadata(3)),
+    SANDSTONE_DOUBLE_SLAB(builder(43).metadata(1)),
+    OAK_DOUBLE_SLAB(builder(43).metadata(2)),
+    COBBLESTONE_DOUBLE_SLAB(builder(43).metadata(3)),
     STONE_SLAB(44),
-    SANDSTONE_SLAB(new Builder(44).metadata(1)),
-    OAK_SLAB(new Builder(44).metadata(2)),
-    COBBLESTONE_SLAB(new Builder(44).metadata(3)),
+    SANDSTONE_SLAB(builder(44).metadata(1)),
+    OAK_SLAB(builder(44).metadata(2)),
+    COBBLESTONE_SLAB(builder(44).metadata(3)),
     BRICK_BLOCK(45),
     TNT(46),
     BOOKSHELF(47),
@@ -136,15 +139,15 @@ public enum Material {
     LOCKED_CHEST(95),
     TRAPDOOR(96),
 
-    IRON_SHOVEL(new Builder(256).maxStack(1)),
-    IRON_PICKAXE(new Builder(257).maxStack(1)),
+    IRON_SHOVEL(builder(256).maxStack(1)),
+    IRON_PICKAXE(builder(257).maxStack(1)),
     IRON_AXE(258),
     FLINT_AND_STEEL(259),
-    APPLE(new Builder(260).maxStack(1).itemCreator(AppleItem::new)),
+    APPLE(builder(260).maxStack(1).itemCreator(AppleItem::new)),
     BOW(261),
     ARROW(262),
     COAL(263),
-    CHARCOAL(new Builder(263).metadata(1)),
+    CHARCOAL(builder(263).metadata(1)),
     DIAMOND(264),
     IRON_INGOT(265),
     GOLD_INGOT(266),
@@ -163,7 +166,7 @@ public enum Material {
     DIAMOND_AXE(279),
     STICK(280),
     BOWL(281),
-    MUSHROOM_SOUP(new Builder(282).maxStack(1).itemCreator(MushroomSoupItem::new)),
+    MUSHROOM_SOUP(builder(282).maxStack(1).itemCreator(MushroomSoupItem::new)),
     GOLD_SWORD(283),
     GOLD_SHOVEL(284),
     GOLD_PICKAXE(285),
@@ -178,7 +181,7 @@ public enum Material {
     GOLD_HOE(294),
     WHEAT_SEEDS(295),
     WHEAT(296),
-    BREAD(new Builder(297).maxStack(1).itemCreator(BreadItem::new)),
+    BREAD(builder(297).maxStack(1).itemCreator(BreadItem::new)),
     LEATHER_HELMET(298),
     LEATHER_TUNIC(299),
     LEATHER_LEGS(300),
@@ -200,11 +203,11 @@ public enum Material {
     GOLD_LEGS(316),
     GOLD_BOOTS(317),
     FLINT(318),
-    RAW_PORK(new Builder(319).maxStack(1).itemCreator(RawPorkItem::new)),
-    COOKED_PORK(new Builder(320).maxStack(1).itemCreator(CookedPorkItem::new)),
+    RAW_PORK(builder(319).maxStack(1).itemCreator(RawPorkItem::new)),
+    COOKED_PORK(builder(320).maxStack(1).itemCreator(CookedPorkItem::new)),
     PAINTING(321),
-    GOLDEN_APPLE(new Builder(322).maxStack(1).itemCreator(GoldenAppleItem::new)),
-    NOTCH_APPLE(new Builder(322).metadata(1).maxStack(1)), // TODO item creator
+    GOLDEN_APPLE(builder(322).maxStack(1).itemCreator(GoldenAppleItem::new)),
+    NOTCH_APPLE(builder(322).metadata(1).maxStack(1)), // TODO item creator
     SIGN(323),
     OAK_DOOR(324),
     BUCKET(325),
@@ -231,60 +234,63 @@ public enum Material {
     FISHING_ROD(346),
     CLOCK(347),
     GLOWSTONE_DUST(348),
-    FISH(new Builder(349).maxStack(1).itemCreator(FishItem::new)),
-    COOKED_FISH(new Builder(350).maxStack(1).itemCreator(CookedFishItem::new)),
+    FISH(builder(349).maxStack(1).itemCreator(FishItem::new)),
+    COOKED_FISH(builder(350).maxStack(1).itemCreator(CookedFishItem::new)),
     INK_SAC(351),
-    ROSE_RED(new Builder(351).metadata(1)),
-    CACTUS_GREEN(new Builder(351).metadata(2)),
-    COCOA_BEANS(new Builder(351).metadata(3)),
-    LAPIS_LAZULI(new Builder(351).metadata(4)),
-    PURPLE_DYE(new Builder(351).metadata(5)),
-    CYAN_DYE(new Builder(351).metadata(6)),
-    LIGHT_GREY_DYE(new Builder(351).metadata(7)),
-    GREY_DYE(new Builder(351).metadata(8)),
-    PINK_DYE(new Builder(351).metadata(9)),
-    LIME_DYE(new Builder(351).metadata(10)),
-    YELLOW_DYE(new Builder(351).metadata(11)),
-    LIGHT_BLUE_DYE(new Builder(351).metadata(12)),
-    MAGENTA_DYE(new Builder(351).metadata(13)),
-    ORANGE_DYE(new Builder(351).metadata(14)),
-    BONE_MEAL(new Builder(351).metadata(15)),
+    ROSE_RED(builder(351).metadata(1)),
+    CACTUS_GREEN(builder(351).metadata(2)),
+    COCOA_BEANS(builder(351).metadata(3)),
+    LAPIS_LAZULI(builder(351).metadata(4)),
+    PURPLE_DYE(builder(351).metadata(5)),
+    CYAN_DYE(builder(351).metadata(6)),
+    LIGHT_GREY_DYE(builder(351).metadata(7)),
+    GREY_DYE(builder(351).metadata(8)),
+    PINK_DYE(builder(351).metadata(9)),
+    LIME_DYE(builder(351).metadata(10)),
+    YELLOW_DYE(builder(351).metadata(11)),
+    LIGHT_BLUE_DYE(builder(351).metadata(12)),
+    MAGENTA_DYE(builder(351).metadata(13)),
+    ORANGE_DYE(builder(351).metadata(14)),
+    BONE_MEAL(builder(351).metadata(15)),
     BONE(352),
     SUGAR(353),
-    CAKE(new Builder(354).maxStack(1).blockId(CAKE_BLOCK.blockId)),
-    BED(new Builder(355).maxStack(1)),
-    REDSTONE_REPEATER(new Builder(356).maxStack(1)),
-    COOKIE(new Builder(357).maxStack(8)),
-    MAP(new Builder(358).maxStack(1)),
-    SHEARS(new Builder(359).maxStack(1)),
-    DISC_11(new Builder(2256).maxStack(1)),
-    DISC_CAT(new Builder(2257).maxStack(1)),
+    CAKE(builder(354).maxStack(1).blockId(CAKE_BLOCK.blockId)),
+    BED(builder(355).maxStack(1)),
+    REDSTONE_REPEATER(builder(356).maxStack(1)),
+    COOKIE(builder(357).maxStack(8)),
+    MAP(builder(358).maxStack(1)),
+    SHEARS(builder(359).maxStack(1)),
+    DISC_11(builder(2256).maxStack(1)),
+    DISC_CAT(builder(2257).maxStack(1)),
     ;
 
-//    private static final Material[] MATERIALS = new Material[2258];
     private static final Map<Integer, Material> MATERIAL_BY_ID_AND_META = new HashMap<>();
 
     public final short id;
     public final short metadata;
-    public final boolean block;
     public final short maxStack;
+    public final boolean block;
+    public final boolean liquid;
+    public final boolean solid;
     public final byte blockId;
     public final CraftingRecipe[] recipes;
     private final Function<Short, Item> itemCreator;
 
     Material(int id) {
-        this((short) id, (short) 0, (byte) 64, (byte) 0, new CraftingRecipe[0], null);
+        this((short) id, (short) 0, (byte) 64, (byte) 0, false, false, new CraftingRecipe[0], null);
     }
 
     Material(Builder builder) {
-        this(builder.id, builder.metadata, builder.maxStack, builder.blockId, builder.recipes.toArray(new CraftingRecipe[0]), builder.itemCreator);
+        this(builder.id, builder.metadata, builder.maxStack, builder.blockId, builder.liquid, builder.solid, builder.recipes.toArray(new CraftingRecipe[0]), builder.itemCreator);
     }
 
-    Material(short id, short metadata, byte maxStack, byte blockId, CraftingRecipe[] recipes, Function<Short, Item> itemCreator) {
+    Material(short id, short metadata, byte maxStack, byte blockId, boolean liquid, boolean solid, CraftingRecipe[] recipes, Function<Short, Item> itemCreator) {
         this.id = id;
         this.metadata = metadata;
         this.maxStack = maxStack;
         this.recipes = recipes;
+        this.liquid = liquid;
+        this.solid = solid;
 
         block = id <= Byte.MAX_VALUE && id > 0;
         if (block) {
@@ -313,20 +319,17 @@ public enum Material {
     }
 
     public static Material get(short id, short metadata) {
-//        if (id >= MATERIALS.length || id < 0) {
-//            return AIR;
-//        }
-//
-//        return MATERIALS[id];
         return MATERIAL_BY_ID_AND_META.getOrDefault(id << 16 | metadata, AIR);
     }
 
     static {
-//        Arrays.fill(MATERIALS, AIR);
         for (Material material : values()) {
-//            MATERIALS[material.id] = material;
             MATERIAL_BY_ID_AND_META.put(material.id << 16 | material.metadata, material);
         }
+    }
+
+    private static Builder builder(int id) {
+        return new Builder(id);
     }
 
     private static class Builder {
@@ -337,6 +340,7 @@ public enum Material {
         private byte maxStack = 64;
         private byte blockId = 0;
         private boolean solid = true;
+        private boolean liquid = false;
         private Function<Short, Item> itemCreator;
 
         public Builder(int id) {
@@ -360,6 +364,18 @@ public enum Material {
 
         public Builder recipe(CraftingRecipe recipe) {
             recipes.add(recipe);
+            return this;
+        }
+
+        public Builder liquid() {
+            liquid = true;
+            solid = false;
+            return this;
+        }
+
+        public Builder solid() {
+            solid = true;
+            liquid = false;
             return this;
         }
 

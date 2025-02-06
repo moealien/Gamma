@@ -151,6 +151,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
 
     @Nullable
     public Block getBlock(int x, int y, int z) {
+        System.out.println("getting block at " + x + ", " + y + ", " + z + " [chunk " + (x >> 4) + ", " + (z >> 4) + "]");
         return getChunk(x >> 4, z >> 4).getBlock(x, y, z);
     }
 
