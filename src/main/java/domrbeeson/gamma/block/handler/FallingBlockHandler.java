@@ -30,7 +30,7 @@ public class FallingBlockHandler extends BlockHandler {
     }
 
     @Override
-    public boolean tick(MinecraftServer server, Block block, long tick) {
+    public boolean update(MinecraftServer server, Block block, long tick) {
         int y = block.y();
         int lowestY = getLowestAvailableY(block);
         if (lowestY == block.y()) {

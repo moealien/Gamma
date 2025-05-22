@@ -5,9 +5,9 @@ import domrbeeson.gamma.Tickable;
 import domrbeeson.gamma.Viewable;
 import domrbeeson.gamma.entity.metadata.EntityMetadata;
 import domrbeeson.gamma.event.events.CancellableEvent;
-import domrbeeson.gamma.event.events.EntityMoveChunkEvent;
-import domrbeeson.gamma.event.events.EntityMoveEvent;
-import domrbeeson.gamma.event.events.EntityTeleportEvent;
+import domrbeeson.gamma.event.events.entity.EntityMoveChunkEvent;
+import domrbeeson.gamma.event.events.entity.EntityMoveEvent;
+import domrbeeson.gamma.event.events.entity.EntityTeleportEvent;
 import domrbeeson.gamma.network.packet.PacketOut;
 import domrbeeson.gamma.network.packet.out.*;
 import domrbeeson.gamma.player.EntityInRange;
@@ -252,6 +252,7 @@ public abstract class Entity<T extends EntityMetadata> implements Tickable, Remo
             } else {
                 moveEvent = new EntityMoveEvent(this, pos, nextTickPos);
             }
+//            world.call(moveEvent); // TODO needs WorldEvent but that's not cancellable
             if (!moveEvent.isCancelled()) {
                 collisionBox.setCentre(nextTickPos);
 

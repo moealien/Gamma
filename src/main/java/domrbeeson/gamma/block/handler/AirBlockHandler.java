@@ -7,4 +7,9 @@ public class AirBlockHandler extends BlockHandler {
         return false;
     }
 
+    @Override
+    public boolean isPermeable() {
+        return true;
+    }
+
 }

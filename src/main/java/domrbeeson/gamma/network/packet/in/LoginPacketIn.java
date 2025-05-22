@@ -1,7 +1,7 @@
 package domrbeeson.gamma.network.packet.in;
 
 import domrbeeson.gamma.MinecraftServer;
-import domrbeeson.gamma.event.events.AsyncPlayerJoinEvent;
+import domrbeeson.gamma.event.events.server.AsyncPlayerJoinEvent;
 import domrbeeson.gamma.network.packet.Packet;
 import domrbeeson.gamma.network.packet.out.PlayerKickPacketOut;
 import domrbeeson.gamma.player.Player;

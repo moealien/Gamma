@@ -19,8 +19,8 @@ public class FurnaceBlockHandler extends TileEntityBlockHandler<FurnaceTileEntit
     }
 
     @Override
-    public void onPlace(MinecraftServer server, Block block, Player player) {
-        block.chunk().addTileEntity(new FurnaceTileEntity(block.x(), block.y(), block.z()));
+    public void onPlace(MinecraftServer server, Block block) {
+        block.chunk().addTileEntity(new FurnaceTileEntity((x, z) -> block.chunk(), block.x(), block.y(), block.z()));
     }
 
     @Override

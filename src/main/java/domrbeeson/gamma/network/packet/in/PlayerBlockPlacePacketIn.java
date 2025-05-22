@@ -3,7 +3,7 @@ package domrbeeson.gamma.network.packet.in;
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.block.handler.BlockHandler;
-import domrbeeson.gamma.event.events.PlayerRightClickBlockEvent;
+import domrbeeson.gamma.event.events.player.PlayerRightClickBlockEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.network.packet.Packet;
@@ -37,6 +37,11 @@ public class PlayerBlockPlacePacketIn extends WorldPacketIn {
     public void handle() {
         // TODO validate clicked block is in range and where player is looking
 
+        if (direction < 0 || direction > 5) {
+            // Player clicked something out of range; cannot rely on this for distance checks because it's client-side but need to support it anyway
+            return;
+        }
+
         Player player = getServer().getPlayerManager().get(getConnection());
         Item heldItem = player.getInventory().getHeldItem();
 
@@ -47,7 +52,7 @@ public class PlayerBlockPlacePacketIn extends WorldPacketIn {
         }
 
         Block clickedBlock = player.getWorld().getChunk(clickedX >> 4, clickedZ >> 4).getBlock(clickedX, clickedY, clickedZ);
-        BlockHandler clickedBlockHandler = getServer().getBlockHandlers().get(clickedBlock.id());
+        BlockHandler clickedBlockHandler = getServer().getBlockHandlers().getBlockHandler(clickedBlock.id());
         if (clickedBlockHandler.onRightClick(getServer(), clickedBlock, player)) {
             return;
         }
@@ -60,7 +65,7 @@ public class PlayerBlockPlacePacketIn extends WorldPacketIn {
         int placedX = clickedX;
         byte placedY = clickedY;
         int placedZ = clickedZ;
-        if (clickedBlockHandler.isSolid()) {
+        if (clickedBlockHandler.isSolid()) { // TODO is this just solid blocks?
             switch (direction) {
                 case 0 -> placedY -= 1;
                 case 1 -> placedY += 1;
@@ -71,8 +76,10 @@ public class PlayerBlockPlacePacketIn extends WorldPacketIn {
             }
         }
         short metadata = heldItem.metadata();
-        player.getInventory().setHeldItem(Material.get(heldId, metadata).getItem(heldItem.amount() - 1));
-        player.getWorld().getChunk(placedX >> 4, placedZ >> 4).placeAsPlayer(player, placedX, placedY, placedZ, Material.get(heldId, heldItem.metadata()).blockId, (byte) metadata);
+        boolean placed = player.getWorld().getChunk(placedX >> 4, placedZ >> 4).placeBlockAsPlayer(player, placedX, placedY, placedZ, Material.get(heldId, heldItem.metadata()).blockId, (byte) metadata);
+        if (placed) {
+            player.getInventory().setHeldItem(Material.get(heldId, metadata).getItem(heldItem.amount() - 1));
+        }
     }
 
 }

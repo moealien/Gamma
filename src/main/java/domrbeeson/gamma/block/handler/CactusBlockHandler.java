@@ -1,22 +1,19 @@
 package domrbeeson.gamma.block.handler;
 
 import domrbeeson.gamma.MinecraftServer;
-import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
-import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
 
 import java.util.List;
 
-public class CactusBlockHandler extends StackBlockHandler {
+public class CactusBlockHandler extends PlantStackBlockHandler {
 
-    private static final int GROW_HEIGHT = 3; // TODO
+    private static final int GROW_HEIGHT = 3;
     private static final List<Item> DROPS = List.of(Material.CACTUS.getItem());
 
-    @Override
-    public boolean isSolid() {
-        return false;
+    public CactusBlockHandler() {
+        super(Material.CACTUS.blockId);
     }
 
     @Override
@@ -25,13 +22,43 @@ public class CactusBlockHandler extends StackBlockHandler {
     }
 
     @Override
-    public void onBreak(MinecraftServer server, Block block, Player player) {
-        breakStack(block);
+    public boolean canPlace(Chunk chunk, int x, int y, int z) {
+        byte blockBelowId = chunk.getBlockId(x, y - 1, z);
+        if (blockBelowId != Material.SAND.blockId && blockBelowId != Material.CACTUS.blockId) {
+            return false;
+        }
+
+        boolean keepCactus = true;
+        if (shouldBreak(chunk, x + 1, y, z)) {
+            keepCactus = false;
+        } else if (shouldBreak(chunk, x, y, z + 1)) {
+            keepCactus = false;
+        } else if (shouldBreak(chunk, x - 1, y, z)) {
+            keepCactus = false;
+        } else if (shouldBreak(chunk, x, y, z - 1)) {
+            keepCactus = false;
+        }
+        return keepCactus;
     }
 
     @Override
-    protected boolean canGrowOnBlock(short blockId) {
-        return blockId == Material.SAND.id;
+    public void randomTick(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, long tick) {
+        BlockHandler above = server.getBlockHandlers().getBlockHandler(chunk.getBlockId(x, y + 1, z));
+        if (above.isSolid()) {
+            return;
+        }
+
+        int groundY = getGroundY(chunk, x, y, z);
+        if (y - groundY >= GROW_HEIGHT) {
+            return;
+        }
+
+        chunk.setBlock(x, y + 1, z, Material.CACTUS);
+    }
+
+    private boolean shouldBreak(Chunk chunk, int x, int y, int z) {
+        byte blockId = chunk.getBlockId(x, y, z);
+        return blockId != Material.AIR.blockId;
     }
 
 }

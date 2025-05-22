@@ -43,8 +43,11 @@ public record ItemCommand(PlayerManager playerManager) implements Command {
         String itemId = args[1].toUpperCase();
         try {
             material = Material.get(Short.parseShort(itemId), (short) 0);
-        } catch (Exception _) {
-
+        } catch (Exception _) {}
+        if (material == null) {
+            try {
+                material = Material.valueOf(itemId);
+            } catch (Exception _) {}
         }
         if (material == null) {
             sender.sendMessage("Item ID '" + itemId + "' not found.");

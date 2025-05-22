@@ -6,6 +6,7 @@ import domrbeeson.gamma.inventory.FurnaceInventory;
 import domrbeeson.gamma.nbt.NBTTag;
 import domrbeeson.gamma.nbt.tags.NBTCompound;
 import domrbeeson.gamma.nbt.tags.NBTShort;
+import domrbeeson.gamma.world.ChunkGetter;
 import domrbeeson.gamma.world.World;
 
 import java.util.Map;
@@ -29,8 +30,8 @@ public class NBTFurnaceTile extends NBTInventoryTile {
     }
 
     @Override
-    public TileEntity createTileEntity(World world) {
-        return new FurnaceTileEntity(getX(), getY(), getZ());
+    public TileEntity createTileEntity(World world, ChunkGetter chunk) {
+        return new FurnaceTileEntity(chunk, getX(), getY(), getZ());
     }
 
     @Override

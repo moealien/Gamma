@@ -1,9 +1,13 @@
 package domrbeeson.gamma.item;
 
+import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.crafting.CraftingRecipe;
 import domrbeeson.gamma.item.items.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public enum Material {
@@ -14,16 +18,16 @@ public enum Material {
     STONE(1),
     GRASS(2),
     DIRT(3),
-    COBBLESTONE(new Builder(4).itemCreator(CobblestoneItem::new)),
+    COBBLESTONE(builder(4).itemCreator(CobblestoneItem::new)),
     OAK_PLANKS(5),
     OAK_SAPLING(6),
     SPRUCE_SAPLING(new Builder(6).metadata(1)),
     BIRCH_SAPLING(new Builder(6).metadata(2)),
     BEDROCK(7),
-    WATER_FLOWING(8),
-    WATER_SOURCE(9),
-    LAVA_FLOWING(10),
-    LAVA_SOURCE(11),
+    WATER_FLOWING(builder(8)),
+    WATER_SOURCE(builder(9)),
+    LAVA_FLOWING(builder(10)),
+    LAVA_SOURCE(builder(11)),
     SAND(12),
     GRAVEL(13),
     GOLD_ORE(14),
@@ -220,7 +224,7 @@ public enum Material {
     MILK_BUCKET(335),
     BRICK(336),
     CLAY(337),
-    SUGAR_CANE(338),
+    SUGAR_CANE_ITEM(builder(338).blockId(SUGAR_CANE_BLOCK.blockId)),
     PAPER(339),
     BOOK(340),
     SLIME_BALL(341),
@@ -313,18 +317,19 @@ public enum Material {
     }
 
     public static Material get(short id, short metadata) {
-//        if (id >= MATERIALS.length || id < 0) {
-//            return AIR;
-//        }
-//
-//        return MATERIALS[id];
         return MATERIAL_BY_ID_AND_META.getOrDefault(id << 16 | metadata, AIR);
     }
 
+    public static Material get(Block block) {
+        return get(block.id(), block.metadata());
+    }
+
+    private static Builder builder(int id) {
+        return new Builder(id);
+    }
+
     static {
-//        Arrays.fill(MATERIALS, AIR);
         for (Material material : values()) {
-//            MATERIALS[material.id] = material;
             MATERIAL_BY_ID_AND_META.put(material.id << 16 | material.metadata, material);
         }
     }
@@ -336,7 +341,6 @@ public enum Material {
         private short metadata = 0;
         private byte maxStack = 64;
         private byte blockId = 0;
-        private boolean solid = true;
         private Function<Short, Item> itemCreator;
 
         public Builder(int id) {

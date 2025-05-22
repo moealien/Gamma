@@ -22,7 +22,7 @@ public class ToolsDropBlockHandler extends BlockHandler {
         if (canBreakWithTool(toolId)) {
             return drop;
         }
-        return EMPTY_DROPS;
+        return List.of();
     }
 
     protected boolean canBreakWithTool(short toolId) {

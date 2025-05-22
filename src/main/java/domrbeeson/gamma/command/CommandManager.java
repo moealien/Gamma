@@ -15,15 +15,19 @@ public final class CommandManager {
         register(new BanCommand());
         register(new ClearCommand(server.getPlayerManager()));
         register(new GcCommand());
+        register(new HoldingCommand());
         register(new ItemCommand(server.getPlayerManager()));
         register(new KickCommand(server.getPlayerManager()));
         register(new ListCommand(server.getPlayerManager()));
         register(new MessageCommand());
         register(new SaveCommand(server));
+        register(new SayCommand(server));
+        register(new SetBlockCommand());
         register(new StopCommand(server));
         register(new TeleportPosCommand());
         register(new UnbanCommand());
         register(new WorldCommand(server.getWorldManager()));
+        register(new YCommand());
     }
 
     public void register(Command command) {

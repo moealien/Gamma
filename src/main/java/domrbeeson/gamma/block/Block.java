@@ -23,4 +23,19 @@ public record Block(
         return (byte)(z - ((z >> 4) * Chunk.WIDTH));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Block block)) {
+            return false;
+        }
+
+        return chunk.equals(block.chunk)
+                && x == block.x
+                && y == block.y
+                && z == block.z
+                && id == block.id
+                && metadata == block.metadata
+                ;
+    }
+
 }

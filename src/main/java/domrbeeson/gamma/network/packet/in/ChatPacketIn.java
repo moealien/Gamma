@@ -2,8 +2,8 @@ package domrbeeson.gamma.network.packet.in;
 
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.command.Command;
-import domrbeeson.gamma.event.events.AsyncPlayerChatEvent;
-import domrbeeson.gamma.event.events.PlayerCommandEvent;
+import domrbeeson.gamma.event.events.player.AsyncPlayerChatEvent;
+import domrbeeson.gamma.event.events.player.PlayerCommandEvent;
 import domrbeeson.gamma.network.packet.Packet;
 import domrbeeson.gamma.network.packet.out.ChatPacketOut;
 import domrbeeson.gamma.player.Player;

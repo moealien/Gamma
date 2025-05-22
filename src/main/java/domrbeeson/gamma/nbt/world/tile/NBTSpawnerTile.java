@@ -9,6 +9,7 @@ import domrbeeson.gamma.nbt.tags.NBTShort;
 import domrbeeson.gamma.nbt.tags.NBTString;
 import domrbeeson.gamma.nbt.world.NBTEntity;
 import domrbeeson.gamma.nbt.world.NBTTileEntity;
+import domrbeeson.gamma.world.ChunkGetter;
 import domrbeeson.gamma.world.World;
 
 import java.util.Map;
@@ -36,8 +37,8 @@ public class NBTSpawnerTile extends NBTTileEntity {
     }
 
     @Override
-    public TileEntity createTileEntity(World world) {
-        return new SpawnerTileEntity(getX(), getY(), getZ(), LivingEntity.getEntityFromName(entityId));
+    public TileEntity createTileEntity(World world, ChunkGetter chunk) {
+        return new SpawnerTileEntity(chunk, getX(), getY(), getZ(), LivingEntity.getEntityFromName(entityId));
     }
 
     @Override

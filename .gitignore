@@ -33,3 +33,6 @@ server.log
 server.log.lck
 server.properties
 settings.txt
+
+alphaworld/
+regionworld/

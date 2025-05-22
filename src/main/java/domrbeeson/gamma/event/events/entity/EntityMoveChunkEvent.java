@@ -1,4 +1,4 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.entity;
 
 import domrbeeson.gamma.entity.Entity;
 import domrbeeson.gamma.event.Event;

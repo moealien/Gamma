@@ -24,7 +24,7 @@ public final class SettingsFile {
     private static final String SPAWN_ANIMALS_KEY = "spawn_animals";
     private static final String SPAWN_MONSTERS_KEY = "spawn_monsters";
     private static final String VIEW_DISTANCE_KEY = "view_distance";
-    private static final String BETACRAFT_AUTH_KEY = "use_betacraft_authentication";
+    private static final String LOGIN_URL_AUTH_KEY = "login_auth_url"; // TODO change this to "login_auth_url" which defaults to betacraft
     private static final String CHUNK_PACKET_COMPRESSION_KEY = "chunk_packet_compression_level";
     private static final String DEFAULT_WORLD_KEY = "default_world_name";
 
@@ -38,7 +38,7 @@ public final class SettingsFile {
         put(SPAWN_ANIMALS_KEY, "true");
         put(SPAWN_MONSTERS_KEY, "true");
         put(VIEW_DISTANCE_KEY, "10");
-        put(BETACRAFT_AUTH_KEY, "false");
+        put(LOGIN_URL_AUTH_KEY, "betacraft.uk");
         put(CHUNK_PACKET_COMPRESSION_KEY, "1");
         put(DEFAULT_WORLD_KEY, "world");
     }};
@@ -72,6 +72,9 @@ public final class SettingsFile {
 
         MinecraftVersion version = MinecraftVersion.valueOf(values.get(VERSION_KEY).toUpperCase());
         String ip = values.get(IP_KEY);
+        if (ip.isBlank()) {
+            ip = "0.0.0.0";
+        }
         int port = Integer.parseInt(values.get(PORT_KEY));
         int maxPlayers = Integer.parseInt(values.get(MAX_PLAYERS_KEY));
         boolean pvp = Boolean.parseBoolean(values.get(PVP_KEY));
@@ -79,7 +82,7 @@ public final class SettingsFile {
         boolean spawnAnimals = Boolean.parseBoolean(values.get(SPAWN_ANIMALS_KEY));
         boolean spawnMonsters = Boolean.parseBoolean(values.get(SPAWN_MONSTERS_KEY));
         int viewDistance = Integer.parseInt(values.get(VIEW_DISTANCE_KEY));
-        boolean betacraftAuth = Boolean.parseBoolean(values.get(BETACRAFT_AUTH_KEY));
+        boolean betacraftAuth = Boolean.parseBoolean(values.get(LOGIN_URL_AUTH_KEY));
         int chunkPacketCompressionlevel = Integer.parseInt(values.get(CHUNK_PACKET_COMPRESSION_KEY));
         String defaultWorld = values.get(DEFAULT_WORLD_KEY);
 

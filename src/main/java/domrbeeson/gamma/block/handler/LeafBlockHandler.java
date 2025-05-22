@@ -30,7 +30,7 @@ public class LeafBlockHandler extends BlockHandler {
     private List<Item> getDrop(WeightedDropTable dropTable) {
         Material material = dropTable.next();
         if (material == null) {
-            return EMPTY_DROPS;
+            return List.of();
         }
         return List.of(material.getItem());
     }

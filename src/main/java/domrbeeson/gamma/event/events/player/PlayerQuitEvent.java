@@ -1,4 +1,4 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.player;
 
 import domrbeeson.gamma.chat.ChatColor;
 import domrbeeson.gamma.chat.ChatMessage;

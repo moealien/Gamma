@@ -1,17 +1,19 @@
 package domrbeeson.gamma.block.tile;
 
+import domrbeeson.gamma.world.ChunkGetter;
+
 public class SignTileEntity extends TileEntity {
 
     public static final int MAX_LINE_LENGTH = 15;
 
     private final String[] lines;
 
-    public SignTileEntity(int x, int y, int z) {
-        this(x, y, z, new String[] { "", "", "", "" });
+    public SignTileEntity(ChunkGetter chunk, int x, int y, int z) {
+        this(chunk, x, y, z, new String[] { "", "", "", "" });
     }
 
-    public SignTileEntity(int x, int y, int z, String[] lines) {
-        super(x, y, z);
+    public SignTileEntity(ChunkGetter chunk, int x, int y, int z, String[] lines) {
+        super(chunk, x, y, z);
         this.lines = lines;
     }
 

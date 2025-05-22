@@ -1,6 +1,7 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.player;
 
 import domrbeeson.gamma.event.Event;
+import domrbeeson.gamma.event.events.CancellableEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.player.Player;
 

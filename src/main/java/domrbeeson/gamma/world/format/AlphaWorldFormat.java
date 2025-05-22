@@ -8,7 +8,6 @@ import domrbeeson.gamma.nbt.world.NBTAlphaChunk;
 import domrbeeson.gamma.nbt.world.NBTEntity;
 import domrbeeson.gamma.nbt.world.NBTTileEntity;
 import domrbeeson.gamma.world.Chunk;
-import domrbeeson.gamma.world.Dimension;
 import domrbeeson.gamma.world.World;
 
 import java.io.File;
@@ -68,7 +67,7 @@ public class AlphaWorldFormat extends NotchianWorldFormat {
         });
 
         chunkNbt.getTileEntities().forEach(tag -> {
-            TileEntity tile = NBTTileEntity.createNBTEntity((NBTCompound) tag).createTileEntity(getWorld());
+            TileEntity tile = NBTTileEntity.createNBTEntity((NBTCompound) tag).createTileEntity(getWorld(), (x, z) -> getWorld().getChunk(x, z));
             builder.tileEntity(tile);
         });
 
@@ -78,16 +77,6 @@ public class AlphaWorldFormat extends NotchianWorldFormat {
     @Override
     public void writeChunk(Chunk chunk) {
         new NBTAlphaChunk(getChunkFile(chunk.getWorld(), chunk.getChunkX(), chunk.getChunkZ()), chunk).save();
-    }
-
-    @Override
-    public long getSeed() {
-        return getLevelDat().getSeed();
-    }
-
-    @Override
-    public Dimension getDimension() {
-        return getLevelDat().getDimension();
     }
 
     @Override

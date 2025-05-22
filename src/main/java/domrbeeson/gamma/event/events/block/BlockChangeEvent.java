@@ -1,6 +1,7 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.block;
 
 import domrbeeson.gamma.event.Event;
+import domrbeeson.gamma.event.events.CancellableEvent;
 import domrbeeson.gamma.world.Chunk;
 
 public class BlockChangeEvent extends CancellableEvent implements Event.WorldEvent {
@@ -8,9 +9,9 @@ public class BlockChangeEvent extends CancellableEvent implements Event.WorldEve
     private final Chunk chunk;
     private final int x, y, z;
     private final byte currentId, currentMetadata, newId, newMetadata;
-    private final boolean tick;
+    private final boolean update;
 
-    public BlockChangeEvent(Chunk chunk, int x, int y, int z, byte currentId, byte currentMetadata, byte newId, byte newMetadata, boolean tick) {
+    public BlockChangeEvent(Chunk chunk, int x, int y, int z, byte currentId, byte currentMetadata, byte newId, byte newMetadata, boolean update) {
         this.chunk = chunk;
         this.x = x;
         this.y = y;
@@ -19,7 +20,7 @@ public class BlockChangeEvent extends CancellableEvent implements Event.WorldEve
         this.currentMetadata = currentMetadata;
         this.newId = newId;
         this.newMetadata = newMetadata;
-        this.tick = tick;
+        this.update = update;
     }
 
     public Chunk getChunk() {
@@ -54,8 +55,8 @@ public class BlockChangeEvent extends CancellableEvent implements Event.WorldEve
         return newMetadata;
     }
 
-    public boolean tick() {
-        return tick;
+    public boolean doUpdate() {
+        return update;
     }
 
 }

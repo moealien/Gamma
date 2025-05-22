@@ -8,8 +8,8 @@ import domrbeeson.gamma.entity.Pos;
 import domrbeeson.gamma.event.Event;
 import domrbeeson.gamma.event.EventGroup;
 import domrbeeson.gamma.event.RegisteredEventListener;
-import domrbeeson.gamma.event.events.PlayerMoveEvent;
-import domrbeeson.gamma.event.events.WorldUnloadEvent;
+import domrbeeson.gamma.event.events.player.PlayerMoveEvent;
+import domrbeeson.gamma.event.events.server.WorldUnloadEvent;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.network.packet.out.EntityTeleportPacketOut;
 import domrbeeson.gamma.network.packet.out.LoginPacketOut;
@@ -25,7 +25,6 @@ import domrbeeson.gamma.world.terrain.TerrainGenerator;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unloadable, Viewable, Saveable {
@@ -39,7 +38,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     private final Scheduler scheduler = new Scheduler();
     private final WorldManager manager;
     private final List<Player> viewers = new ArrayList<>();
-    private final Map<Long, Chunk> loadedChunks = new ConcurrentHashMap<>();
+    private final Map<Long, Chunk> loadedChunks = new HashMap<>();
     private final String name;
     private final WorldFormat format;
     private final TerrainGenerator generator;
@@ -149,6 +148,11 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         return loadedChunks.values();
     }
 
+    public Material getMaterial(int x, int y, int z) {
+        Chunk chunk = getChunk(x >> 4, z >> 4);
+        return Material.get(chunk.getBlockId(x, y, z), chunk.getBlockMetadata(x, y, z));
+    }
+
     @Nullable
     public Block getBlock(int x, int y, int z) {
         return getChunk(x >> 4, z >> 4).getBlock(x, y, z);
@@ -180,7 +184,15 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     public void tick(long ticks) {
         time = timeInFile + ticks;
         scheduler.tick(ticks);
-        loadedChunks.values().forEach(chunk -> chunk.tick(ticks));
+        List<Chunk> chunks = new ArrayList<>(loadedChunks.values());
+        List<Chunk> staleChunks = new ArrayList<>();
+        for (Chunk chunk : chunks) {
+            chunk.tick(ticks);
+            if (chunk.isStale()) {
+                staleChunks.add(chunk);
+            }
+        }
+        staleChunks.forEach(chunk -> loadedChunks.remove(chunk.getChunkIndex()));
         super.tick(ticks);
     }
 
@@ -209,24 +221,24 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
             Entity<?> entity = entityInRange.entity();
             entity.addViewer(player);
             if (entity instanceof Player) {
+                // Show this player to the other player
                 player.addViewer((Player) entity);
             }
         });
 
         viewers.add(player);
-        sendInitialChunksToPlayer(player);
-        player.spawn();
-    }
 
-    public void sendInitialChunksToPlayer(Player player) {
         Pos pos = player.getPos();
         int chunkX = pos.getChunkX();
         int chunkZ = pos.getChunkZ();
-        for (int x = chunkX - INITIAL_CHUNK_RADIUS; x < chunkX + INITIAL_CHUNK_RADIUS; x++) {
-            for (int z = chunkZ - INITIAL_CHUNK_RADIUS; z < chunkZ + INITIAL_CHUNK_RADIUS; z++) {
+        int radius = Math.min(INITIAL_CHUNK_RADIUS, viewDistance);
+        for (int x = chunkX - radius; x < chunkX + radius; x++) {
+            for (int z = chunkZ - radius; z < chunkZ + radius; z++) {
                 getChunk(x, z).addViewer(player);
             }
         }
+
+        player.spawn();
     }
 
     @Override
@@ -234,8 +246,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         if (viewers.remove(player)) {
             player.removeAllViewers();
             getEntitiesInChunkRange(null, player.getPos(), ENTITY_VIEW_DISTANCE_CHUNKS).forEach(entityInRange -> entityInRange.entity().removeViewer(player));
-            Collection<Chunk> chunks = new HashSet<>(Chunk.getPlayerViewingChunks(player));
-            int i = 0;
+            Collection<Chunk> chunks = player.getViewingChunks();
             for (Chunk chunk : chunks) {
                 chunk.removeViewer(player);
             }
@@ -283,7 +294,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         return spawn.add(0, 10, 0);
     }
 
-    public Pos getPlayerPos(Player player) {
+    public Pos getPlayerSpawnPos(Player player) {
         return getSpawn(); // TODO
     }
 
@@ -322,6 +333,15 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         format.save();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof World world)) {
+            return false;
+        }
+
+        return world.name.equals(name);
+    }
+
     protected void markChunkForSaving(Chunk chunk) {
         saveChunks.add(chunk);
     }
@@ -330,10 +350,6 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         Set<Chunk> changes = new HashSet<>(saveChunks);
         saveChunks.clear();
         return changes;
-    }
-
-    public void broadcast(String message) {
-        viewers.forEach(viewer -> viewer.sendMessage(message));
     }
 
     private static class TimeUpdaterTask extends ScheduledTask {

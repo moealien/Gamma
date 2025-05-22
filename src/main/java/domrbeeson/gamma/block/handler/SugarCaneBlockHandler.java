@@ -10,19 +10,23 @@ import domrbeeson.gamma.world.World;
 
 import java.util.List;
 
-public class SugarCaneBlockHandler extends StackBlockHandler {
+public class SugarCaneBlockHandler extends PlantStackBlockHandler {
 
     private static final int GROW_HEIGHT = 3;
-    private static final List<Item> DROPS = List.of(Material.SUGAR_CANE.getItem());
+    private static final List<Item> DROPS = List.of(Material.SUGAR_CANE_ITEM.getItem());
     private static final byte[] GROW_ON_BLOCKS = new byte[] {
             Material.SUGAR_CANE_BLOCK.blockId,
             Material.GRASS.blockId,
             Material.SAND.blockId
     };
 
+    public SugarCaneBlockHandler() {
+        super(Material.SUGAR_CANE_BLOCK.blockId);
+    }
+
     @Override
     public boolean isSolid() {
-        return false;
+        return true ;
     }
 
     @Override
@@ -40,34 +44,39 @@ public class SugarCaneBlockHandler extends StackBlockHandler {
         byte relativeX = Block.getChunkRelativeX(x);
         byte relativeZ = Block.getChunkRelativeZ(z);
 
-        byte bottomBlockId;
         if (chunk.getBlockId(relativeX, y + 1, relativeZ) != id && chunk.getBlockId(relativeX, y - GROW_HEIGHT + 1, relativeZ) != id) {
             // Sugar cane grows after receiving 16 random ticks
             metadata++;
             if (metadata > 15) {
                 chunk.setBlock(x, y + 1, z, id, (byte) 0);
             } else {
+                // TODO does sugar cane do a block update when it changes metadata?
                 chunk.directlySetBlock(relativeX, y, relativeZ, id, metadata);
             }
-        } else if (!canGrowOnBlock((bottomBlockId = chunk.getBlockId(relativeX, y - 1, relativeZ))) || (bottomBlockId != id && !bottomBlockHasWater(chunk.getWorld(), x, y - 1, z))) {
+        } else if (!canPlace(chunk, x, y, z)) {
+            breakStack(chunk.getBlock(x, y, z));
+        } else if (!bottomBlockHasWater(chunk, x, y - 1, z)) {
             breakStack(chunk.getBlock(x, y, z));
         }
     }
 
     @Override
-    protected boolean canGrowOnBlock(short blockId) {
+    public boolean canPlace(Chunk chunk, int x, int y, int z) {
+        byte blockBelowId = chunk.getBlockId(x, y - 1, z);
         for (byte id : GROW_ON_BLOCKS) {
-            if (id == blockId) {
-                return true;
+            if (id == blockBelowId) {
+                return bottomBlockHasWater(chunk, x, y, z);
             }
         }
         return false;
     }
 
-    private boolean bottomBlockHasWater(World world, int x, int y, int z) {
+    private boolean bottomBlockHasWater(Chunk chunk, int x, int y, int z) {
         byte id;
+        World world = chunk.getWorld();
+        y = getGroundY(chunk, x, y, z);
 
-        Chunk chunk = world.getLoadedChunk((x + 1) >> 4, z >> 4);
+        chunk = world.getLoadedChunk((x + 1) >> 4, z >> 4);
         if (chunk != null) {
             id = chunk.getBlockId(x + 1, y, z);
             if (id == 8 || id == 9) {
@@ -91,7 +100,7 @@ public class SugarCaneBlockHandler extends StackBlockHandler {
             }
         }
 
-    chunk = world.getLoadedChunk(x >> 4, (z - 1) >> 4);
+        chunk = world.getLoadedChunk(x >> 4, (z - 1) >> 4);
         if (chunk != null) {
             id = chunk.getBlockId(x, y, z - 1);
             if (id == 8 || id == 9) {

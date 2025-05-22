@@ -9,7 +9,7 @@ public abstract class ScheduledTask implements Consumer<Long> {
     private boolean cancelled = false;
 
     public ScheduledTask() {
-        this(0);
+        this(1);
     }
 
     public ScheduledTask(long delayTicks) {
@@ -17,8 +17,8 @@ public abstract class ScheduledTask implements Consumer<Long> {
     }
 
     public ScheduledTask(long delayTicks, long repeatInTicks) {
-        if (delayTicks < 0) {
-            delayTicks = 0;
+        if (delayTicks < 1) {
+            delayTicks = 1;
         }
         this.delayTicks = delayTicks;
         this.repeatInTicks = repeatInTicks;

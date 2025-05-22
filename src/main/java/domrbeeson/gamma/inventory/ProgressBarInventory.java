@@ -1,6 +1,6 @@
 package domrbeeson.gamma.inventory;
 
-public abstract class ProgressBarInventory extends TileInventory {
+public abstract class ProgressBarInventory extends Inventory {
 
     public ProgressBarInventory(InventoryType type, String title) {
         super(type, title);

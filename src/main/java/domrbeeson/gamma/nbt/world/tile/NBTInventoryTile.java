@@ -10,6 +10,7 @@ import domrbeeson.gamma.nbt.tags.NBTCompound;
 import domrbeeson.gamma.nbt.tags.NBTList;
 import domrbeeson.gamma.nbt.tags.NBTShort;
 import domrbeeson.gamma.nbt.world.NBTTileEntity;
+import domrbeeson.gamma.world.ChunkGetter;
 import domrbeeson.gamma.world.World;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class NBTInventoryTile extends NBTTileEntity {
     }
 
     @Override
-    public TileEntity createTileEntity(World world) {
+    public TileEntity createTileEntity(World world, ChunkGetter chunk) {
         return null;
     }
 

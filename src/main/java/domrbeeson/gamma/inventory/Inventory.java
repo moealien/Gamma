@@ -2,7 +2,7 @@ package domrbeeson.gamma.inventory;
 
 import domrbeeson.gamma.Tickable;
 import domrbeeson.gamma.Viewable;
-import domrbeeson.gamma.event.events.PlayerWindowClickEvent;
+import domrbeeson.gamma.event.events.player.PlayerWindowClickEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.network.MouseButton;
@@ -32,7 +32,7 @@ public abstract class Inventory implements Tickable, Viewable {
     private final Map<Integer, PlayerWindowClickEvent> playerClicks = new HashMap<>();
 
     private short slotsPopulated = 0;
-    private boolean changed = false;
+    private boolean changedThisTick = false;
 
     public Inventory(InventoryType type, String title) {
         this(type, title, new Item[type.slots]);
@@ -92,7 +92,7 @@ public abstract class Inventory implements Tickable, Viewable {
         if (update) {
             updates.add((short) slot);
         }
-        changed = true;
+        changedThisTick = true;
         return true;
     }
 
@@ -255,6 +255,7 @@ public abstract class Inventory implements Tickable, Viewable {
                 });
             });
             updates.clear();
+            changedThisTick = false;
         }
     }
 
@@ -305,11 +306,15 @@ public abstract class Inventory implements Tickable, Viewable {
     }
 
     public @Nullable Item[] getChanges() {
-        if (changed) {
-            changed = false;
+        if (changedThisTick) {
+            changedThisTick = false;
             return items;
         }
         return null;
+    }
+
+    public boolean hasChangedThisTick() {
+        return changedThisTick;
     }
 
     protected static short[] reversePlayerInventoryMappings(short[] playerInvMappings) {

@@ -21,7 +21,7 @@ public class TntBlockHandler extends PoweredBlockHandler {
         if (flintAndSteel) {
             return FLINT_AND_STEEL_DROPS;
         }
-        return EMPTY_DROPS;
+        return List.of();
     }
 
     @Override

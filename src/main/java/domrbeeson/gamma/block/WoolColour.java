@@ -1,5 +1,6 @@
 package domrbeeson.gamma.block;
 
+// TODO store data values here too for convenience
 public enum WoolColour {
     WHITE,
     ORANGE,

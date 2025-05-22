@@ -24,6 +24,6 @@ public class LapisOreBlockHandler extends ToolsDropBlockHandler {
             byte amount = (byte) ThreadLocalRandom.current().nextInt(4, 9);
             return List.of(Material.LAPIS_LAZULI.getItem(amount));
         }
-        return EMPTY_DROPS;
+        return List.of();
     }
 }

@@ -1,6 +1,7 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.player;
 
 import domrbeeson.gamma.event.Event;
+import domrbeeson.gamma.event.events.CancellableEvent;
 import domrbeeson.gamma.inventory.Inventory;
 import domrbeeson.gamma.network.MouseButton;
 import domrbeeson.gamma.player.Player;

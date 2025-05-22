@@ -1,8 +1,9 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.server;
 
 import domrbeeson.gamma.chat.ChatColor;
 import domrbeeson.gamma.chat.ChatMessage;
 import domrbeeson.gamma.event.Event;
+import domrbeeson.gamma.event.events.CancellableEvent;
 import domrbeeson.gamma.version.MinecraftVersion;
 import domrbeeson.gamma.world.World;
 import org.jetbrains.annotations.Nullable;

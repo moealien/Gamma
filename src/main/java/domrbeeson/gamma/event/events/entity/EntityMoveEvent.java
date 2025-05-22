@@ -1,8 +1,9 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.entity;
 
 import domrbeeson.gamma.entity.Entity;
 import domrbeeson.gamma.entity.Pos;
 import domrbeeson.gamma.event.Event;
+import domrbeeson.gamma.event.events.CancellableEvent;
 
 public class EntityMoveEvent extends CancellableEvent implements Event.WorldEvent {
 

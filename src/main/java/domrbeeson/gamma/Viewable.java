@@ -1,5 +1,6 @@
 package domrbeeson.gamma;
 
+import domrbeeson.gamma.chat.ChatMessage;
 import domrbeeson.gamma.entity.Pos;
 import domrbeeson.gamma.player.EntityInRange;
 import domrbeeson.gamma.player.Player;
@@ -19,6 +20,16 @@ public interface Viewable {
     }
     List<Player> getViewers();
     boolean hasViewers();
+
+    default void broadcast(ChatMessage message) {
+        broadcast(message.toString());
+    }
+
+    default void broadcast(String message) {
+        getViewers().forEach(player -> {
+            player.sendMessage(message);
+        });
+    }
 
     default SortedSet<EntityInRange> getViewersInRange(Pos centre, double radius) {
         SortedSet<EntityInRange> players = new TreeSet<>();

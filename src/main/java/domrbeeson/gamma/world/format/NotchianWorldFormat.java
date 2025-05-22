@@ -8,6 +8,7 @@ import domrbeeson.gamma.nbt.world.NBTLevelDat;
 import domrbeeson.gamma.nbt.world.NBTPlayer;
 import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
+import domrbeeson.gamma.world.Dimension;
 import domrbeeson.gamma.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -112,6 +113,16 @@ public abstract class NotchianWorldFormat implements WorldFormat {
             playersSaved++;
         }
         System.out.println("Saved " + chunksSaved + " chunks and " + playersSaved + " players in world '" + world.getName() + "'");
+    }
+
+    @Override
+    public long getSeed() {
+        return getLevelDat().getSeed();
+    }
+
+    @Override
+    public Dimension getDimension() {
+        return getLevelDat().getDimension();
     }
 
     protected final World getWorld() {

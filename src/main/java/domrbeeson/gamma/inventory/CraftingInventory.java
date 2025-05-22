@@ -2,7 +2,7 @@ package domrbeeson.gamma.inventory;
 
 import domrbeeson.gamma.crafting.RecipeManager;
 import domrbeeson.gamma.crafting.RecipeState;
-import domrbeeson.gamma.event.events.PlayerWindowClickEvent;
+import domrbeeson.gamma.event.events.player.PlayerWindowClickEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.player.Player;

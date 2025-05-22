@@ -2,13 +2,12 @@ package domrbeeson.gamma.block.handler;
 
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
-import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
 
 public class FireBlockHandler extends BlockHandler {
 
     @Override
-    public void onPlace(MinecraftServer server, Block block, Player player) {
+    public void onPlace(MinecraftServer server, Block block) {
         // TODO detect empty nether portal
     }
 

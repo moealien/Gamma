@@ -4,7 +4,6 @@ import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
-import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
 
 import java.util.HashMap;
@@ -22,7 +21,7 @@ public class LightingBlockHandler extends BlockHandler {
     }};
 
     @Override
-    public void onPlace(MinecraftServer server, Block block, Player player) {
+    public void onPlace(MinecraftServer server, Block block) {
         byte lightValue = LIGHTING_VALUES.getOrDefault(block.id(), (byte) 0);
         // TODO update light values
     }
@@ -31,7 +30,7 @@ public class LightingBlockHandler extends BlockHandler {
     public List<Item> getDrops(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, short toolId) {
         byte lightValue = LIGHTING_VALUES.getOrDefault(id, (byte) 0);
         // TODO update light values
-        return EMPTY_DROPS;
+        return List.of();
     }
 
 }

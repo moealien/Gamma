@@ -7,6 +7,7 @@ import domrbeeson.gamma.nbt.tags.NBTCompound;
 import domrbeeson.gamma.nbt.tags.NBTInt;
 import domrbeeson.gamma.nbt.tags.NBTString;
 import domrbeeson.gamma.nbt.world.tile.*;
+import domrbeeson.gamma.world.ChunkGetter;
 import domrbeeson.gamma.world.World;
 
 import java.util.HashMap;
@@ -49,11 +50,11 @@ public abstract class NBTTileEntity implements NBTCompoundCreator {
     private final int x, y, z;
 
     public NBTTileEntity(NBTCompound compound) {
-        name = compound.getString("id").getValue();
+        this.name = compound.getString("id").getValue();
 
-        x = compound.getInt("x").getValue();
-        y = compound.getInt("y").getValue();
-        z = compound.getInt("z").getValue();
+        this.x = compound.getInt("x").getValue();
+        this.y = compound.getInt("y").getValue();
+        this.z = compound.getInt("z").getValue();
     }
 
     public NBTTileEntity(String name, TileEntity tileEntity) {
@@ -84,7 +85,7 @@ public abstract class NBTTileEntity implements NBTCompoundCreator {
         return NAME_TO_NBT.get(name).apply(compound);
     }
 
-    public abstract TileEntity createTileEntity(World world);
+    public abstract TileEntity createTileEntity(World world, ChunkGetter chunk);
 
     public final int getX() {
         return x;

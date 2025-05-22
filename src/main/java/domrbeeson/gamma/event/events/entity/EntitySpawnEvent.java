@@ -1,7 +1,8 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.entity;
 
 import domrbeeson.gamma.entity.Entity;
 import domrbeeson.gamma.event.Event;
+import domrbeeson.gamma.event.events.CancellableEvent;
 
 public class EntitySpawnEvent extends CancellableEvent implements Event.WorldEvent {
 

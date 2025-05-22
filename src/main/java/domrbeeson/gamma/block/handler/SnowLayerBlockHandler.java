@@ -12,13 +12,13 @@ public class SnowLayerBlockHandler extends BlockHandler {
     }
 
     @Override
-    public boolean tick(MinecraftServer server, Block block, long ticks) { // TODO need to fix
+    public boolean update(MinecraftServer server, Block block, long ticks) { // TODO need to fix
         Chunk chunk = block.chunk();
         int x = block.x();
         int y = block.y();
         int z = block.z();
         byte blockBelowId = chunk.getBlockId(x, y - 1, z);
-        if (!server.getBlockHandlers().get(blockBelowId).isSolid()) {
+        if (!server.getBlockHandlers().getBlockHandler(blockBelowId).isSolid()) {
             chunk.setBlock(x, y, z, (byte) 0);
             return true;
         }

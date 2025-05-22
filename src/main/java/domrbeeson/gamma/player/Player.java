@@ -9,7 +9,7 @@ import domrbeeson.gamma.entity.EntityType;
 import domrbeeson.gamma.entity.LivingEntity;
 import domrbeeson.gamma.entity.Pos;
 import domrbeeson.gamma.entity.metadata.LivingEntityMetadata;
-import domrbeeson.gamma.event.events.PlayerQuitEvent;
+import domrbeeson.gamma.event.events.player.PlayerQuitEvent;
 import domrbeeson.gamma.inventory.CraftingInventory;
 import domrbeeson.gamma.inventory.Inventory;
 import domrbeeson.gamma.inventory.PlayerInventory;
@@ -41,6 +41,7 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
     private final CompletableFuture<Void> loading = new CompletableFuture<>();
     private final Set<Chunk> queuedViewChunks = new HashSet<>();
     private final List<Chunk> queuedRemoveChunks = new ArrayList<>();
+    private final Set<Chunk> viewingChunks = new HashSet<>();
     private final PlayerInventory inventory;
 
     private @Nullable Inventory openInventory = null; // This will never be the player's inventory - that is a special case
@@ -299,7 +300,7 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
         }
 
         int chunkX, chunkZ;
-        for (Chunk chunk : Chunk.getPlayerViewingChunks(this)) { // TODO chunk can sometimes be null???????????????/
+        for (Chunk chunk : viewingChunks) {
 //            if (chunk == null) {
 //                continue;
 //            }
@@ -310,12 +311,14 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
                     || chunkZ < zCentre - viewDistance
                     || chunkZ > zCentre + viewDistance
             ) {
-                synchronized (queuedViewChunks) {
-                    queuedViewChunks.remove(chunk); // TODO maybe synchronising here will be slow?
-                }
+                queuedViewChunks.remove(chunk); // TODO maybe synchronising here will be slow?
                 hideChunk(chunk); // TODO maybe just synchronise this whole block to queuedRemoveChunks
             }
         }
+    }
+
+    public Set<Chunk> getViewingChunks() {
+        return viewingChunks;
     }
 
     public void sendPacket(PacketOut packet) {

@@ -6,6 +6,7 @@ import domrbeeson.gamma.nbt.NBTTag;
 import domrbeeson.gamma.nbt.tags.NBTByte;
 import domrbeeson.gamma.nbt.tags.NBTCompound;
 import domrbeeson.gamma.nbt.world.NBTTileEntity;
+import domrbeeson.gamma.world.ChunkGetter;
 import domrbeeson.gamma.world.World;
 
 import java.util.Map;
@@ -29,8 +30,8 @@ public class NBTNoteBlockTile extends NBTTileEntity {
     }
 
     @Override
-    public TileEntity createTileEntity(World world) {
-        return new NoteBlockTileEntity(getX(), getY(), getZ(), note);
+    public TileEntity createTileEntity(World world, ChunkGetter chunk) {
+        return new NoteBlockTileEntity(chunk, getX(), getY(), getZ(), note);
     }
 
     @Override

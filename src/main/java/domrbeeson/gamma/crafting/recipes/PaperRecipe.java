@@ -6,7 +6,7 @@ import domrbeeson.gamma.item.Material;
 
 public class PaperRecipe extends ShapedCraftingRecipe {
 
-    private static final RecipeItem SUGAR_CANE = new RecipeItem(Material.SUGAR_CANE);
+    private static final RecipeItem SUGAR_CANE = new RecipeItem(Material.SUGAR_CANE_ITEM);
 
     private static final RecipeItem[][] RECIPE = new RecipeItem[][] {
             { SUGAR_CANE, SUGAR_CANE, SUGAR_CANE }

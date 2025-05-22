@@ -37,10 +37,7 @@ public abstract class EventGroup<E extends Event> implements Tickable {
     }
 
     public void call(E event) {
-        SortedSet<RegisteredEventListener<E>> listeners;
-        synchronized (registeredListeners) {
-            listeners = registeredListeners.get(event.getClass());
-        }
+        SortedSet<RegisteredEventListener<E>> listeners = registeredListeners.get(event.getClass());
 
         if (listeners == null) {
             return;
@@ -66,7 +63,6 @@ public abstract class EventGroup<E extends Event> implements Tickable {
     public void queuePacket(PacketIn packet, PlayerConnection connection) {
         Map<Class<? extends PacketIn>, PacketIn> packets = playerPackets.getOrDefault(connection, new ConcurrentHashMap<>());
         if (packets.containsKey(packet.getClass())) {
-//            System.out.println("dropped packet " + packet.getClass().getSimpleName());
             return;
         }
         packets.put(packet.getClass(), packet);
@@ -76,11 +72,8 @@ public abstract class EventGroup<E extends Event> implements Tickable {
     @Override
     public void tick(long ticks) {
         if (!this.playerPackets.isEmpty()) {
-            Map<PlayerConnection, Map<Class<? extends PacketIn>, PacketIn>> playerPackets;
-            synchronized (this.playerPackets) {
-                playerPackets = new HashMap<>(this.playerPackets);
-                this.playerPackets.clear();
-            }
+            Map<PlayerConnection, Map<Class<? extends PacketIn>, PacketIn>>     playerPackets = new HashMap<>(this.playerPackets);
+            this.playerPackets.clear();
             playerPackets.forEach((connection, packets) -> {
                 packets.forEach((clazz, packet) -> {
                     packet.handle();

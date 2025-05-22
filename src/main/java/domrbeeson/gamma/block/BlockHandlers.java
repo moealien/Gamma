@@ -3,8 +3,9 @@ package domrbeeson.gamma.block;
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.handler.*;
 import domrbeeson.gamma.item.Material;
+import domrbeeson.gamma.world.Dimension;
 
-import static domrbeeson.gamma.block.handler.BlockHandler.updateAdjacentBlocks;
+import java.util.HashMap;
 
 public final class BlockHandlers {
 
@@ -18,15 +19,19 @@ public final class BlockHandlers {
     private static final SelfDropBlockHandler DEFAULT_BLOCK_HANDLER = new SelfDropBlockHandler();
 
     private final BlockHandler[] handlers = new BlockHandler[96];
-    private final MinecraftServer server;
 
     public BlockHandlers(MinecraftServer server) {
-        this.server = server;
-
         AttachedBlockHandler attachedBlockHandler = new AttachedBlockHandler();
         MushroomBlockHandler mushroomBlockHandler = new MushroomBlockHandler();
-        FluidBlockHandler waterBlockHandler = new FluidBlockHandler(5);
-        FluidBlockHandler lavaBlockHandler = new FluidBlockHandler(30); // TODO 10 ticks in nether
+        FluidBlockHandler waterBlockHandler = new FluidBlockHandler(Material.WATER_SOURCE.blockId, Material.WATER_FLOWING.blockId, 5, 1);
+        FluidBlockHandler lavaBlockHandler = new FluidBlockHandler(Material.LAVA_SOURCE.blockId, Material.LAVA_FLOWING.blockId, new HashMap<>() {{
+                put(Dimension.OVERWORLD, 30L);
+                put(Dimension.NETHER, 10L);
+            }}, new HashMap<>() {{
+                put(Dimension.OVERWORLD, 2);
+                put(Dimension.NETHER, 1);
+            }}
+        );
         InstantBreakBlockHandler instantBreakHandler = new InstantBreakBlockHandler();
 
         register(Material.AIR, new AirBlockHandler());
@@ -82,23 +87,14 @@ public final class BlockHandlers {
         handlers[id] = null;
     }
 
-    public BlockHandler get(byte id) {
-        if (id >= handlers.length || id < 1) {
+    public BlockHandler getBlockHandler(byte id) {
+        if (id >= handlers.length || id < 0) {
             return EMPTY_BLOCK_HANDLER;
         }
         if (handlers[id] == null) {
             return DEFAULT_BLOCK_HANDLER;
         }
         return handlers[id];
-    }
-
-    public void tick(Block block) {
-        if (block == null) {
-            return;
-        }
-        if (get(block.id()).tick(server, block, block.world().getTime())) {
-            updateAdjacentBlocks(block, 1);
-        }
     }
 
 }

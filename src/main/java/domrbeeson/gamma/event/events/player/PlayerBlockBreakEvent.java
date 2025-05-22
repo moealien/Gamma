@@ -1,6 +1,7 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.player;
 
 import domrbeeson.gamma.MinecraftServer;
+import domrbeeson.gamma.event.events.block.BlockBreakEvent;
 import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
 

@@ -1,4 +1,4 @@
-package domrbeeson.gamma.event.events;
+package domrbeeson.gamma.event.events.server;
 
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.event.Event;

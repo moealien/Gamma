@@ -2,18 +2,19 @@ package domrbeeson.gamma.block.tile;
 
 import domrbeeson.gamma.entity.LivingEntity;
 import domrbeeson.gamma.entity.mobs.PigEntity;
+import domrbeeson.gamma.world.ChunkGetter;
 
 public class SpawnerTileEntity extends TileEntity {
 
     private Class<? extends LivingEntity<?>> entity;
     private short delayTicks = 20;
 
-    public SpawnerTileEntity(int x, int y, int z) {
-        this(x, y, z, PigEntity.class);
+    public SpawnerTileEntity(ChunkGetter chunk, int x, int y, int z) {
+        this(chunk, x, y, z, PigEntity.class);
     }
 
-    public SpawnerTileEntity(int x, int y, int z, Class<? extends LivingEntity<?>> entity) {
-        super(x, y, z);
+    public SpawnerTileEntity(ChunkGetter chunk, int x, int y, int z, Class<? extends LivingEntity<?>> entity) {
+        super(chunk, x, y, z);
         this.entity = entity;
     }
 

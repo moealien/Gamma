@@ -2,7 +2,7 @@ package domrbeeson.gamma.player;
 
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.chat.ChatMessage;
-import domrbeeson.gamma.event.events.ServerStopEvent;
+import domrbeeson.gamma.event.events.server.ServerStopEvent;
 import domrbeeson.gamma.network.SocketReader;
 import domrbeeson.gamma.network.SocketWriter;
 import domrbeeson.gamma.network.packet.out.PlayerKickPacketOut;

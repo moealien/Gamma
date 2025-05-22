@@ -7,7 +7,7 @@ import domrbeeson.gamma.command.ConsoleCommandReader;
 import domrbeeson.gamma.crafting.RecipeManager;
 import domrbeeson.gamma.event.Event;
 import domrbeeson.gamma.event.EventGroup;
-import domrbeeson.gamma.event.events.ServerStopEvent;
+import domrbeeson.gamma.event.events.server.ServerStopEvent;
 import domrbeeson.gamma.player.PlayerManager;
 import domrbeeson.gamma.settings.ServerSettings;
 import domrbeeson.gamma.settings.SettingsFile;
@@ -30,10 +30,11 @@ public final class MinecraftServer extends EventGroup<Event.GlobalEvent> impleme
     private final RecipeManager recipeManager = new RecipeManager();
     private final BlockHandlers blockHandlers = new BlockHandlers(this);
     private final CommandManager commandManager = new CommandManager(this);
-    private final ConsoleCommandReader consoleReader = new ConsoleCommandReader(commandManager);
+    private final ConsoleCommandReader consoleReader = new ConsoleCommandReader(this, commandManager);
     private final TpsTask tpsTask = new TpsTask();
 
     private boolean running = true;
+    private long tick = 0;
 
     public MinecraftServer() throws InterruptedException {
         World defaultWorld = worldManager.loadOrCreateWorld(SERVER_SETTINGS.getDefaultWorldName(), new AlphaWorldFormat(), new DebugGenerator());
@@ -46,8 +47,6 @@ public final class MinecraftServer extends EventGroup<Event.GlobalEvent> impleme
 
         scheduler.scheduleTask(tpsTask);
 
-        // TODO each world should have its own tick thread
-        long tick = 0;
         long start, timeout;
         while (running) {
             start = System.currentTimeMillis();
@@ -68,6 +67,10 @@ public final class MinecraftServer extends EventGroup<Event.GlobalEvent> impleme
 
             tick++;
         }
+    }
+
+    public long getTick() {
+        return tick;
     }
 
     public void stop() {

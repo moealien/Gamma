@@ -50,9 +50,9 @@ public class PlayerDiggingPacketIn extends WorldPacketIn {
         }
 
         if (status == Status.STARTED_DIGGING) {
-            getServer().getBlockHandlers().get(block.id()).onLeftClick(getServer(), block, player);
+            getServer().getBlockHandlers().getBlockHandler(block.id()).onLeftClick(getServer(), block, player);
         } else if (status == Status.FINISHED_DIGGING) {
-            getServer().getBlockHandlers().get(block.id()).onBreak(getServer(), block, player);
+            getServer().getBlockHandlers().getBlockHandler(block.id()).onBreak(getServer(), block, player);
         }
     }
 
