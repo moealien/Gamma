@@ -55,6 +55,8 @@ public enum Packet {
     WINDOW_ITEMS(104),
     WINDOW_PROGRES_BAR(105),
 
+    SIGN_UPDATE(130),
+
     PLAYER_KICK(255),
     ;
 

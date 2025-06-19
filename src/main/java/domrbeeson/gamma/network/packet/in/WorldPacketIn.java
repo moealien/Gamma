@@ -10,17 +10,24 @@ import java.io.IOException;
 
 public abstract class WorldPacketIn extends PacketIn {
 
+    private final Player player;
+
     protected WorldPacketIn(Packet packet, MinecraftServer server, PlayerConnection connection, DataInputStream stream) throws IOException {
         super(packet, server, connection, stream);
+        this.player = server.getPlayerManager().get(connection);
     }
 
     @Override
     public void queue() {
-        Player player = getServer().getPlayerManager().get(getConnection());
         if (player == null) {
 //            System.out.println("PLAYER IS NULL (" + getClass().getSimpleName() + ")");
         } else {
             player.getWorld().queuePacket(this, getConnection());
         }
     }
+
+    public Player getPlayer() {
+        return player;
+    }
+
 }

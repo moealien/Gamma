@@ -15,8 +15,7 @@ public class PlayerKickPacketIn extends ServerPacketIn {
     public PlayerKickPacketIn(MinecraftServer server, PlayerConnection connection, DataInputStream stream) throws IOException {
         super(Packet.PLAYER_KICK, server, connection, stream);
 
-        Player player = server.getPlayerManager().get(connection);
-        reason = readString(player.getProtocol(), stream);
+        reason = readString(getProtocol(), stream);
     }
 
     @Override

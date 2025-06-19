@@ -2,6 +2,7 @@ package domrbeeson.gamma.world;
 
 import domrbeeson.gamma.*;
 import domrbeeson.gamma.block.Block;
+import domrbeeson.gamma.block.tile.TileEntity;
 import domrbeeson.gamma.entity.Entity;
 import domrbeeson.gamma.entity.EntityType;
 import domrbeeson.gamma.entity.Pos;
@@ -179,6 +180,12 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     @Nullable
     public Chunk getLoadedChunk(long chunkIndex) {
         return loadedChunks.get(chunkIndex);
+    }
+
+    @Nullable
+    public TileEntity getTileEntity(int x, int y, int z) {
+        Chunk chunk = getChunk(x >> 4, z >> 4);
+        return chunk.getTileEntity(Block.getChunkRelativeX(x), y, Block.getChunkRelativeZ(z));
     }
 
     public boolean isChunkLoaded(int x, int z) {

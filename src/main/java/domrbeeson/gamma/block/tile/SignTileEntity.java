@@ -1,5 +1,7 @@
 package domrbeeson.gamma.block.tile;
 
+import domrbeeson.gamma.network.packet.out.SignUpdatePacketOut;
+import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.ChunkGetter;
 
 public class SignTileEntity extends TileEntity {
@@ -37,15 +39,23 @@ public class SignTileEntity extends TileEntity {
         if (!isLineValid(line)) {
             return;
         }
-        if (text.length() > MAX_LINE_LENGTH) {
+        if (!isTextValid(text)) {
             return;
         }
         lines[line] = text;
-        // TODO update on clients
+
+        SignUpdatePacketOut packet = new SignUpdatePacketOut(this);
+        for (Player viewer : getChunk().getViewers()) {
+            viewer.sendPacket(packet);
+        }
     }
 
     private boolean isLineValid(int line) {
         return line >= 0 && line < lines.length;
+    }
+
+    private boolean isTextValid(String text) {
+        return text.length() <= MAX_LINE_LENGTH;
     }
 
 }

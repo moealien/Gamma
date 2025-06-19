@@ -76,6 +76,9 @@ public final class BlockHandlers {
         register(Material.RED_MUSHROOM, mushroomBlockHandler);
         register(Material.DANDELION, instantBreakHandler);
         register(Material.ROSE, instantBreakHandler);
+
+        register(Material.SIGN_POST, new SignBlockHandler());
+
         register(Material.PUMPKIN, DEFAULT_BLOCK_HANDLER);
 
         register(Material.SNOW_LAYER, new SnowLayerBlockHandler());

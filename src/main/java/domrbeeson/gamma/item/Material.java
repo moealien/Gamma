@@ -208,8 +208,8 @@ public enum Material {
     COOKED_PORK(new Builder(320).maxStack(1).itemCreator(CookedPorkItem::new)),
     PAINTING(321),
     GOLDEN_APPLE(new Builder(322).maxStack(1).itemCreator(GoldenAppleItem::new)),
-    NOTCH_APPLE(new Builder(322).metadata(1).maxStack(1)), // TODO item creator
-    SIGN(323),
+    NOTCH_APPLE(new Builder(322).metadata(1).maxStack(1).metadata(10)), // TODO item creator
+    SIGN(new Builder(323).blockId(Material.SIGN_POST.blockId).maxStack(1)   ),
     OAK_DOOR(324),
     BUCKET(325),
     WATER_BUCKET(326),

@@ -33,7 +33,7 @@ public class FurnaceBlockHandler extends TileEntityBlockHandler<FurnaceTileEntit
 
     @Override
     public boolean onRightClick(MinecraftServer server, Block block, Player player) {
-        TileEntity tile = block.chunk().getTileEntity(block.x(), block.y(), block.z());
+        TileEntity tile = block.world().getTileEntity(block.x(), block.y(), block.z());
         if (tile instanceof FurnaceTileEntity) {
             player.openInventory(((FurnaceTileEntity) tile).getInventory());
             block.chunk().markForSaving();

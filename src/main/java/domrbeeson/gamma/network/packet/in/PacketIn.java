@@ -2,6 +2,7 @@ package domrbeeson.gamma.network.packet.in;
 
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.network.packet.Packet;
+import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.player.PlayerConnection;
 import domrbeeson.gamma.version.MinecraftVersion;
 import org.jetbrains.annotations.Nullable;
@@ -46,6 +47,15 @@ public abstract class PacketIn {
         return stream;
     }
 
+    public final int getProtocol() {
+        Player player = server.getPlayerManager().get(connection);
+        if (player == null) {
+            // Can be null when player is first connecting because the initial packet doesn't send the client's protocol version
+            return -1;
+        }
+        return player.getProtocol();
+    }
+
     public abstract void queue(); // Queues it for processing with the correct packet handler - world packets e.g. movement, server packets e.g. ping, chat
     public abstract void handle(); // Does something with the packet
 
@@ -69,34 +79,36 @@ public abstract class PacketIn {
         return PACKETS[id] != null ? PACKETS[id] : null;
     }
     
-    private static void queue(Packet packet, PacketCreator func) {
+    private static void register(Packet packet, PacketCreator func) {
         PACKETS[packet.id] = func;
     }
 
     static {
-        queue(Packet.KEEP_ALIVE, KeepAlivePacketIn::new);
-        queue(Packet.LOGIN, LoginPacketIn::new);
-        queue(Packet.HANDSHAKE, HandshakePacketIn::new);
-        queue(Packet.CHAT, ChatPacketIn::new);
+        register(Packet.KEEP_ALIVE, KeepAlivePacketIn::new);
+        register(Packet.LOGIN, LoginPacketIn::new);
+        register(Packet.HANDSHAKE, HandshakePacketIn::new);
+        register(Packet.CHAT, ChatPacketIn::new);
 
-        queue(Packet.ENTITY_USE, EntityUsePacketIn::new);
+        register(Packet.ENTITY_USE, EntityUsePacketIn::new);
 
-        queue(Packet.PLAYER_RESPAWN, PlayerRespawnPacketIn::new);
-        queue(Packet.FLYING, PlayerFlyingPacketIn::new);
-        queue(Packet.PLAYER_POSITION, PlayerPositionPacketIn::new);
-        queue(Packet.PLAYER_LOOK, PlayerLookPacketIn::new);
-        queue(Packet.PLAYER_POSITION_AND_LOOK, PlayerPositionAndLookPacketIn::new);
-        queue(Packet.PLAYER_DIGGING, PlayerDiggingPacketIn::new);
-        queue(Packet.PLAYER_BLOCK_PLACE, PlayerBlockPlacePacketIn::new);
-        queue(Packet.PLAYER_HELD_ITEM_CHANGE, PlayerHeldItemChangePacketIn::new);
+        register(Packet.PLAYER_RESPAWN, PlayerRespawnPacketIn::new);
+        register(Packet.FLYING, PlayerFlyingPacketIn::new);
+        register(Packet.PLAYER_POSITION, PlayerPositionPacketIn::new);
+        register(Packet.PLAYER_LOOK, PlayerLookPacketIn::new);
+        register(Packet.PLAYER_POSITION_AND_LOOK, PlayerPositionAndLookPacketIn::new);
+        register(Packet.PLAYER_DIGGING, PlayerDiggingPacketIn::new);
+        register(Packet.PLAYER_BLOCK_PLACE, PlayerBlockPlacePacketIn::new);
+        register(Packet.PLAYER_HELD_ITEM_CHANGE, PlayerHeldItemChangePacketIn::new);
 
-        queue(Packet.PLAYER_ANIMATION, PlayerAnimationPacketIn::new);
-        queue(Packet.ENTITY_ACTION, EntityActionPacketIn::new);
+        register(Packet.PLAYER_ANIMATION, PlayerAnimationPacketIn::new);
+        register(Packet.ENTITY_ACTION, EntityActionPacketIn::new);
 
-        queue(Packet.CLOSE_WINDOW, WindowClosePacketIn::new);
-        queue(Packet.WINDOW_CLICK, WindowClickPacketIn::new);
+        register(Packet.CLOSE_WINDOW, WindowClosePacketIn::new);
+        register(Packet.WINDOW_CLICK, WindowClickPacketIn::new);
 
-        queue(Packet.PLAYER_KICK, PlayerKickPacketIn::new);
+        register(Packet.SIGN_UPDATE, SignUpdatePacketIn::new);
+
+        register(Packet.PLAYER_KICK, PlayerKickPacketIn::new);
     }
 
 }

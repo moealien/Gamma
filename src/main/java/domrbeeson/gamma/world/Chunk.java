@@ -5,6 +5,7 @@ import domrbeeson.gamma.Tickable;
 import domrbeeson.gamma.Viewable;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.block.BlockHandlers;
+import domrbeeson.gamma.block.tile.SignTileEntity;
 import domrbeeson.gamma.block.tile.TileEntity;
 import domrbeeson.gamma.entity.Entity;
 import domrbeeson.gamma.entity.EntityType;
@@ -23,6 +24,7 @@ import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.network.packet.out.BlockChangePacketOut;
 import domrbeeson.gamma.network.packet.out.ChunkPacketOut;
 import domrbeeson.gamma.network.packet.out.PreChunkPacketOut;
+import domrbeeson.gamma.network.packet.out.SignUpdatePacketOut;
 import domrbeeson.gamma.player.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,6 +52,7 @@ public class Chunk implements Tickable, Viewable {
     private final long chunkIndex;
     private final List<Entity<?>> entities;
     private final Map<Short, TileEntity> tileEntities;
+    private final Set<SignTileEntity> signTileEntities;
     private final Map<EntityType, List<Entity<?>>> entitiesByType = new HashMap<>();
 
     private final Map<Long, Map<Long, BlockChangeEvent>> scheduledBlockChanges = new HashMap<>();
@@ -78,6 +81,7 @@ public class Chunk implements Tickable, Viewable {
         this.blockAndSkyLight = builder.blockAndSkyLight;
         this.entities = builder.entities;
         this.tileEntities = builder.tileEntities;
+        this.signTileEntities = builder.signTileEntities;
         this.chunkIndex = getIndex(chunkX, chunkZ);
 
         preChunkPacketLoad = new PreChunkPacketOut(chunkX, chunkZ, true);
@@ -368,9 +372,7 @@ public class Chunk implements Tickable, Viewable {
     }
 
     @Nullable
-    public TileEntity getTileEntity(int x, int y, int z) {
-        x = Block.getChunkRelativeX(x);
-        z = Block.getChunkRelativeZ(z);
+    public TileEntity getTileEntity(byte x, int y, byte z) {
         if (x < 0 || y < 0 || z < 0) {
             return null;
         }
@@ -379,10 +381,16 @@ public class Chunk implements Tickable, Viewable {
 
     public void addTileEntity(TileEntity tile) {
         tileEntities.put(tile.packLocation(), tile);
+        if (tile instanceof SignTileEntity sign) {
+            signTileEntities.add(sign);
+        }
     }
 
     public void removeTileEntity(TileEntity tile) {
         tileEntities.remove(tile.packLocation());
+        if (tile instanceof SignTileEntity sign) {
+            signTileEntities.remove(sign);
+        }
     }
 
     protected void unload() {
@@ -581,6 +589,9 @@ public class Chunk implements Tickable, Viewable {
             viewers.add(player);
             player.sendPacket(preChunkPacketLoad);
             player.sendPacket(getChunkPacket());
+            for (SignTileEntity sign : signTileEntities) {
+                player.sendPacket(new SignUpdatePacketOut(sign));
+            }
 //            world.getScheduler().runNextTick(ticks -> { // TODO This seems to fix most of the world holes, but need to make it more efficient
 //                entities.forEach(entity -> entity.addViewer(player));
 //            });
@@ -655,6 +666,7 @@ public class Chunk implements Tickable, Viewable {
 
         private final List<Entity<?>> entities = new ArrayList<>();
         private final Map<Short, TileEntity> tileEntities = new HashMap<>();
+        private final Set<SignTileEntity> signTileEntities = new HashSet<>();
 
         private byte[][][] blocks = new byte[Chunk.WIDTH][Chunk.HEIGHT][Chunk.WIDTH];
         private byte[][][] metadata = new byte[Chunk.WIDTH][Chunk.HEIGHT][Chunk.WIDTH];
@@ -689,6 +701,9 @@ public class Chunk implements Tickable, Viewable {
 
         public Builder tileEntity(TileEntity tileEntity) {
             tileEntities.put(tileEntity.packLocation(), tileEntity);
+            if (tileEntity instanceof SignTileEntity sign) {
+                signTileEntities.add(sign);
+            }
             return this;
         }
     }

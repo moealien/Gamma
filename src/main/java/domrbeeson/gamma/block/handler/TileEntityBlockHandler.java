@@ -21,10 +21,11 @@ public abstract class TileEntityBlockHandler<T extends TileEntity> implements Bl
             return;
         }
         block.chunk().removeTileEntity(tile);
+        BlockHandler.super.onBreak(server, block, player);
     }
 
     public T getTileEntity(Chunk chunk, int x, int y, int z) {
-        TileEntity tile = chunk.getTileEntity(x, y, z);
+        TileEntity tile = chunk.getWorld().getTileEntity(x, y, z);
         if (tile != null && tile.getClass() == clazz) {
             return (T) tile;
         }
