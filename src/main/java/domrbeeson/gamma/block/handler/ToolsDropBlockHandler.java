@@ -7,7 +7,7 @@ import domrbeeson.gamma.world.Chunk;
 
 import java.util.List;
 
-public class ToolsDropBlockHandler extends BlockHandler {
+public class ToolsDropBlockHandler implements BlockHandler {
 
     private final List<Item> drop;
     private final short[] toolIds;

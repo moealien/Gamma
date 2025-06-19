@@ -85,6 +85,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         manager.removeWorld(this);
         playerMoveListener.stop();
 
+        format.save();
         for (Chunk chunk : new HashSet<>(loadedChunks.values())) {
             chunk.unload();
         }
@@ -172,7 +173,12 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
 
     @Nullable
     public Chunk getLoadedChunk(int chunkX, int chunkZ) {
-        return loadedChunks.get(Chunk.getIndex(chunkX, chunkZ));
+        return getLoadedChunk(Chunk.getIndex(chunkX, chunkZ));
+    }
+
+    @Nullable
+    public Chunk getLoadedChunk(long chunkIndex) {
+        return loadedChunks.get(chunkIndex);
     }
 
     public boolean isChunkLoaded(int x, int z) {

@@ -5,7 +5,7 @@ import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.world.Chunk;
 
-public abstract class PlantStackBlockHandler extends BlockHandler {
+public abstract class PlantStackBlockHandler implements BlockHandler {
 
     private final short blockId;
 
@@ -15,7 +15,6 @@ public abstract class PlantStackBlockHandler extends BlockHandler {
 
     @Override
     public boolean update(MinecraftServer server, Block block, long tick) {
-        System.out.println("updating block " + Material.get(block).name() + " at Y " + block.y());
         if (!canPlace(block.chunk(), block.x(), block.y(), block.z())) {
             breakStack(block);
             return true;
@@ -49,7 +48,6 @@ public abstract class PlantStackBlockHandler extends BlockHandler {
         short aboveBlockId;
         do {
             chunk.breakBlock(x, y, z);
-            System.out.println("breaking block at y " + y + ", checking if block above is equal to " + blockId + ": " + chunk.getBlockId    (x, y + 1, z));
         } while ((aboveBlockId = chunk.getBlockId(x, ++y, z)) == this.blockId && aboveBlockId != Material.AIR.blockId);
     }
 

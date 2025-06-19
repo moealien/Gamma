@@ -122,7 +122,6 @@ public final class MinecraftServer extends EventGroup<Event.GlobalEvent> impleme
     public void broadcast(String message) {
         if (running) {
             playerManager.getPlayers().forEach(player -> {
-                System.out.println("Sending message to " + player.getUsername());
                 player.sendMessage(message);
             });
         }

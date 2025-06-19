@@ -12,7 +12,7 @@ public class BlockBreakEvent extends BlockChangeEvent {
 
     public BlockBreakEvent(MinecraftServer server, Chunk chunk, int x, int y, int z, byte currentId, byte currentMetadata, boolean update) {
         super(chunk, x, y, z, currentId, currentMetadata, (byte) 0, (byte) 0, update);
-        drops = server.getBlockHandlers().getBlockHandler(currentId).getDrops(server, chunk, x, y, z, currentId, currentMetadata);
+        drops = server.getBlockHandlers().getBlockHandler(currentId).getDrops(server, chunk, x, y, z, currentId, currentMetadata, (short) 0);
     }
 
     public List<Item> getDrops() {

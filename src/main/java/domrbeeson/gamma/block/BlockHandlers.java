@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public final class BlockHandlers {
 
-    public static class EmptyBlockHandler extends BlockHandler {
+    public static class EmptyBlockHandler implements BlockHandler {
         @Override
         public boolean isSolid() {
             return false;
@@ -23,13 +23,13 @@ public final class BlockHandlers {
     public BlockHandlers(MinecraftServer server) {
         AttachedBlockHandler attachedBlockHandler = new AttachedBlockHandler();
         MushroomBlockHandler mushroomBlockHandler = new MushroomBlockHandler();
-        FluidBlockHandler waterBlockHandler = new FluidBlockHandler(Material.WATER_SOURCE.blockId, Material.WATER_FLOWING.blockId, 5, 1);
+        FluidBlockHandler waterBlockHandler = new FluidBlockHandler(Material.WATER_SOURCE.blockId, Material.WATER_FLOWING.blockId, 5, (byte) 1);
         FluidBlockHandler lavaBlockHandler = new FluidBlockHandler(Material.LAVA_SOURCE.blockId, Material.LAVA_FLOWING.blockId, new HashMap<>() {{
                 put(Dimension.OVERWORLD, 30L);
                 put(Dimension.NETHER, 10L);
             }}, new HashMap<>() {{
-                put(Dimension.OVERWORLD, 2);
-                put(Dimension.NETHER, 1);
+                put(Dimension.OVERWORLD, (byte) 2);
+                put(Dimension.NETHER, (byte) 1);
             }}
         );
         InstantBreakBlockHandler instantBreakHandler = new InstantBreakBlockHandler();
@@ -59,6 +59,8 @@ public final class BlockHandlers {
         register(Material.MOSSY_COBBLESTONE, new ToolsDropBlockHandler(Material.MOSSY_COBBLESTONE, Material.WOOD_PICKAXE.id, Material.STONE_PICKAXE.id, Material.IRON_PICKAXE.id, Material.DIAMOND_PICKAXE.id, Material.GOLD_PICKAXE.id));
 
         register(Material.CHEST, new ChestBlockHandler());
+        register(Material.REDSTONE_WIRE, new RedstoneBlockHandler());
+        register(Material.REDSTONE_TORCH, new RedstoneTorchBlockHandler());
 
         register(Material.CRAFTING_TABLE, new CraftingTableBlockHandler());
         register(Material.FURNACE, new FurnaceBlockHandler());
@@ -92,7 +94,7 @@ public final class BlockHandlers {
             return EMPTY_BLOCK_HANDLER;
         }
         if (handlers[id] == null) {
-            return DEFAULT_BLOCK_HANDLER;
+            return EMPTY_BLOCK_HANDLER;
         }
         return handlers[id];
     }

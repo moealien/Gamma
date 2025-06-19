@@ -34,7 +34,7 @@ public class TntBlockHandler extends PoweredBlockHandler {
     }
 
     @Override
-    public void onPower(MinecraftServer server, Block me, byte powerLevel) {
+    public void onDirectPower(MinecraftServer server, Block me, byte powerLevel) {
         // TODO light tnt
     }
 

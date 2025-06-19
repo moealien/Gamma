@@ -7,7 +7,7 @@ import domrbeeson.gamma.world.Chunk;
 
 import java.util.List;
 
-public class GrassBlockHandler extends BlockHandler {
+public class GrassBlockHandler implements BlockHandler {
 
     private static final List<Item> DROPS = List.of(Material.DIRT.getItem());
 

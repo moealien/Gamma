@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class WheatBlockHandler extends BlockHandler {
+public class WheatBlockHandler implements BlockHandler {
 
     @Override
     public boolean isSolid() {

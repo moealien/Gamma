@@ -1,6 +1,6 @@
 package domrbeeson.gamma.block.handler;
 
-public class AirBlockHandler extends BlockHandler {
+public class AirBlockHandler implements BlockHandler {
 
     @Override
     public boolean isSolid() {

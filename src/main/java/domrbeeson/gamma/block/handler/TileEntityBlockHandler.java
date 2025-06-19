@@ -6,7 +6,7 @@ import domrbeeson.gamma.block.tile.TileEntity;
 import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
 
-public abstract class TileEntityBlockHandler<T extends TileEntity> extends BlockHandler {
+public abstract class TileEntityBlockHandler<T extends TileEntity> implements BlockHandler {
 
     private final Class<T> clazz;
 

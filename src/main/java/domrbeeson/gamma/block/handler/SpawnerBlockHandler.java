@@ -3,7 +3,7 @@ package domrbeeson.gamma.block.handler;
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.world.Chunk;
 
-public class SpawnerBlockHandler extends BlockHandler {
+public class SpawnerBlockHandler implements BlockHandler {
 
     @Override
     public void randomTick(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, long ticks) {

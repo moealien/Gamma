@@ -9,7 +9,7 @@ import domrbeeson.gamma.world.Chunk;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LeafBlockHandler extends BlockHandler {
+public class LeafBlockHandler implements BlockHandler {
 
     private final WeightedDropTable oakDropTable = new WeightedDropTable().add(Material.OAK_SAPLING, 5).add(Material.APPLE, 0.5).nothing(94.5);
     private final WeightedDropTable birchDropTable = new WeightedDropTable().add(Material.BIRCH_SAPLING, 5).add(Material.APPLE, 0.5).nothing(94.5);

@@ -7,7 +7,7 @@ import domrbeeson.gamma.world.Chunk;
 
 import java.util.List;
 
-public class SaplingBlockHandler extends BlockHandler {
+public class SaplingBlockHandler implements BlockHandler {
 
     @Override
     public List<Item> getDrops(MinecraftServer server, Chunk chunk, int x, int y, int z, byte blockId, byte blockMaterial, short toolId) {

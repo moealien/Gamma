@@ -4,7 +4,7 @@ import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.world.Chunk;
 
-public class FireBlockHandler extends BlockHandler {
+public class FireBlockHandler implements BlockHandler {
 
     @Override
     public void onPlace(MinecraftServer server, Block block) {

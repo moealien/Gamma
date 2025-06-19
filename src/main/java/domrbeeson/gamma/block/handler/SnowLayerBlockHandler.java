@@ -4,7 +4,7 @@ import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.world.Chunk;
 
-public class SnowLayerBlockHandler extends BlockHandler {
+public class SnowLayerBlockHandler implements BlockHandler {
 
     @Override
     public boolean isSolid() {

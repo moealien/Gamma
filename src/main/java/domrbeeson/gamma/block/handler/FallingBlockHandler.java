@@ -12,7 +12,7 @@ import domrbeeson.gamma.world.Chunk;
 
 import java.util.List;
 
-public class FallingBlockHandler extends BlockHandler {
+public class FallingBlockHandler implements BlockHandler {
 
     private static final byte[] FALL_INTO_BLOCKS = new byte[] {
             0, 8, 9, 10, 11

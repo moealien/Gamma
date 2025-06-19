@@ -217,7 +217,7 @@ public enum Material {
     MINECART(328),
     SADDLE(329),
     IRON_DOOR(330),
-    REDSTONE(331),
+    REDSTONE(builder(331).blockId(REDSTONE_WIRE.blockId)),
     SNOWBALL(332),
     BOAT(333),
     LEATHER(334),

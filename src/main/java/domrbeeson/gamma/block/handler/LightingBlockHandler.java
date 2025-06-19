@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LightingBlockHandler extends BlockHandler {
+public class LightingBlockHandler implements BlockHandler {
 
     private static final Map<Byte, Byte> LIGHTING_VALUES = new HashMap<>() {{
         put(Material.TORCH.blockId, (byte) 15);

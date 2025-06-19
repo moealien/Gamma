@@ -7,7 +7,7 @@ import domrbeeson.gamma.world.Chunk;
 
 import java.util.List;
 
-public class ClayBlockHandler extends BlockHandler {
+public class ClayBlockHandler implements BlockHandler {
 
     private static final List<Item> DROPS = List.of(Material.CLAY.getItem(4));
 

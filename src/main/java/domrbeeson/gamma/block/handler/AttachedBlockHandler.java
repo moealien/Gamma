@@ -1,6 +1,6 @@
 package domrbeeson.gamma.block.handler;
 
-public class AttachedBlockHandler extends BlockHandler {
+public class AttachedBlockHandler implements BlockHandler {
 
     private static final byte[] BREAK_WHEN_ADJACENT_IDS = new byte[] {
             0

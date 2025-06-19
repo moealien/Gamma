@@ -3,12 +3,14 @@ package domrbeeson.gamma.network.packet.in;
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.block.handler.BlockHandler;
+import domrbeeson.gamma.entity.Pos;
 import domrbeeson.gamma.event.events.player.PlayerRightClickBlockEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.network.packet.Packet;
 import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.player.PlayerConnection;
+import domrbeeson.gamma.world.Direction;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -66,14 +68,10 @@ public class PlayerBlockPlacePacketIn extends WorldPacketIn {
         byte placedY = clickedY;
         int placedZ = clickedZ;
         if (clickedBlockHandler.isSolid()) { // TODO is this just solid blocks?
-            switch (direction) {
-                case 0 -> placedY -= 1;
-                case 1 -> placedY += 1;
-                case 2 -> placedZ -= 1;
-                case 3 -> placedZ += 1;
-                case 4 -> placedX -= 1;
-                case 5 -> placedX += 1;
-            }
+            Pos adjusted = Direction.values()[direction].applyDirection(placedX, placedY, placedZ);
+            placedX = adjusted.getBlockX();
+            placedY = (byte) adjusted.getBlockY(); // TODO will this cause problem with height limit?
+            placedZ = adjusted.getBlockZ();
         }
         short metadata = heldItem.metadata();
         boolean placed = player.getWorld().getChunk(placedX >> 4, placedZ >> 4).placeBlockAsPlayer(player, placedX, placedY, placedZ, Material.get(heldId, heldItem.metadata()).blockId, (byte) metadata);

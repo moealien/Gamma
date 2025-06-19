@@ -4,21 +4,23 @@ import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.world.Chunk;
 import domrbeeson.gamma.world.Dimension;
+import domrbeeson.gamma.world.Direction;
 import domrbeeson.gamma.world.World;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FluidBlockHandler extends BlockHandler {
+public class FluidBlockHandler implements BlockHandler {
 
     private static final int MAX_FLOW_DISTANCE = 8;
 
     private final byte sourceBlockId;
     private final byte flowingBlockId;
     private final Map<Dimension, Long> updateFrequencyTicks;
-    private final Map<Dimension, Integer> dropoff;
+    private final Map<Dimension, Byte> dropoff;
 
-    public FluidBlockHandler(byte sourceBlockId, byte flowingBlockId, long updateFrequencyTicks, int dropoff) {
+    public FluidBlockHandler(byte sourceBlockId, byte flowingBlockId, long updateFrequencyTicks, byte dropoff) {
         this.sourceBlockId = sourceBlockId;
         this.flowingBlockId = flowingBlockId;
         this.updateFrequencyTicks = new HashMap<>();
@@ -31,7 +33,7 @@ public class FluidBlockHandler extends BlockHandler {
         }
     }
 
-    public FluidBlockHandler(byte sourceBlockId, byte flowingBlockId, Map<Dimension, Long> updateFrequencyTicks, Map<Dimension, Integer> dropoff) {
+    public FluidBlockHandler(byte sourceBlockId, byte flowingBlockId, Map<Dimension, Long> updateFrequencyTicks, Map<Dimension, Byte> dropoff) {
         this.sourceBlockId = sourceBlockId;
         this.flowingBlockId = flowingBlockId;
         this.updateFrequencyTicks = updateFrequencyTicks;
@@ -40,7 +42,7 @@ public class FluidBlockHandler extends BlockHandler {
         }
         this.dropoff = dropoff;
         for (Dimension dimension : Dimension.values()) {
-            this.dropoff.putIfAbsent(dimension, 1);
+            this.dropoff.putIfAbsent(dimension, (byte) 1);
         }
     }
 
@@ -75,18 +77,73 @@ public class FluidBlockHandler extends BlockHandler {
             return true;
         }
 
-        byte height = block.metadata();
+        byte height = (byte) (block.metadata() + dropoff.get(world.getFormat().getDimension()));
         if (height >= MAX_FLOW_DISTANCE) {
             return false;
         }
-        height += dropoff.get(world.getFormat().getDimension());
 
-        flow(ticks, world, x + 1, y, z, height);
-        flow(ticks, world, x, y, z + 1, height);
-        flow(ticks, world, x - 1, y, z, height);
-        flow(ticks, world, x, y, z - 1, height);
+        Direction holeDirection = getHoleDirection(block.world(), x, y, z, height);
+        System.out.println("hole direction: " + holeDirection.name());
+
+        if (holeDirection == Direction.WEST || holeDirection == Direction.NONE) {
+            flow(ticks, world, x + 1, y, z, height);
+        }
+        if (holeDirection == Direction.EAST || holeDirection == Direction.NONE) {
+            flow(ticks, world, x - 1, y, z, height);
+        }
+        if (holeDirection == Direction.NORTH || holeDirection == Direction.NONE) {
+            flow(ticks, world, x, y, z + 1, height);
+        }
+        if (holeDirection == Direction.SOUTH || holeDirection == Direction.NONE) {
+            flow(ticks, world, x, y, z - 1, height);
+        }
 
         return true;
+    }
+
+    @Nullable
+    private Direction getHoleDirection(World world, int x, int y, int z, byte height) {
+        int checkDistance = (MAX_FLOW_DISTANCE - height) / dropoff.get(world.getFormat().getDimension());
+        System.out.println("checkDistance: " + checkDistance);
+        if (checkDistance == 0) {
+            return null;
+        }
+
+        for (int i = 1; i < checkDistance; i++) {
+            Block block = world.getBlock(x + i, y, z);
+            if (world.getServer().getBlockHandlers().getBlockHandler(block.id()).isPermeable()) {
+                block = world.getBlock(x + i, y - 1, z);
+                if (world.getServer().getBlockHandlers().getBlockHandler(block.id()).isPermeable()) {
+                    return Direction.WEST;
+                }
+            }
+
+            block = world.getBlock(x - i, y, z);
+            if (world.getServer().getBlockHandlers().getBlockHandler(block.id()).isPermeable()) {
+                block = world.getBlock(x - i, y - 1, z);
+                if (world.getServer().getBlockHandlers().getBlockHandler(block.id()).isPermeable()) {
+                    return Direction.EAST;
+                }
+            }
+
+            block = world.getBlock(x, y, z + i);
+            if (world.getServer().getBlockHandlers().getBlockHandler(block.id()).isPermeable()) {
+                block = world.getBlock(x, y - 1, z + i);
+                if (world.getServer().getBlockHandlers().getBlockHandler(block.id()).isPermeable()) {
+                    return Direction.NORTH;
+                }
+            }
+
+            block = world.getBlock(x, y, z - i);
+            if (world.getServer().getBlockHandlers().getBlockHandler(block.id()).isPermeable()) {
+                block = world.getBlock(x, y - 1, z - i);
+                if (world.getServer().getBlockHandlers().getBlockHandler(block.id()).isPermeable()) {
+                    return Direction.SOUTH;
+                }
+            }
+        }
+
+        return Direction.NONE;
     }
 
     private boolean flow(long ticks, World world, int x, int y, int z, byte newHeight) {
