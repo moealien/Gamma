@@ -113,6 +113,7 @@ public enum Material {
     LADDER(65),
     RAIL(66),
     COBBLESTONE_STAIRS(67),
+    WALL_SIGN(68), // TODO use direction when placing
     LEVER(69),
     STONE_PRESSURE_PLATE(70),
     IRON_DOOR_BOTTOM(71),
@@ -209,7 +210,7 @@ public enum Material {
     PAINTING(321),
     GOLDEN_APPLE(new Builder(322).maxStack(1).itemCreator(GoldenAppleItem::new)),
     NOTCH_APPLE(new Builder(322).metadata(1).maxStack(1).metadata(10)), // TODO item creator
-    SIGN(new Builder(323).blockId(Material.SIGN_POST.blockId).maxStack(1)   ),
+    SIGN(new Builder(323).blockId(Material.SIGN_POST.blockId).maxStack(1)), // TODO sign has two block IDs, 63 sign post and 68 wall sign
     OAK_DOOR(324),
     BUCKET(325),
     WATER_BUCKET(326),

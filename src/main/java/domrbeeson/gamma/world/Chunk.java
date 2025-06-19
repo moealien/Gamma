@@ -264,6 +264,7 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public boolean placeBlockAsPlayer(Player player, int x, byte y, int z, byte id, byte metadata) {
+        // TODO need the direction for things like sign posts and wall signs
         byte relativeX = Block.getChunkRelativeX(x);
         byte relativeZ = Block.getChunkRelativeZ(z);
         if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {

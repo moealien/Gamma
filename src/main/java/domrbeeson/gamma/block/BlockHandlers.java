@@ -77,7 +77,9 @@ public final class BlockHandlers {
         register(Material.DANDELION, instantBreakHandler);
         register(Material.ROSE, instantBreakHandler);
 
-        register(Material.SIGN_POST, new SignBlockHandler());
+        SignBlockHandler signBlockHandler = new SignBlockHandler();
+        register(Material.SIGN_POST, signBlockHandler);
+        register(Material.SIGN, signBlockHandler);
 
         register(Material.PUMPKIN, DEFAULT_BLOCK_HANDLER);
 
