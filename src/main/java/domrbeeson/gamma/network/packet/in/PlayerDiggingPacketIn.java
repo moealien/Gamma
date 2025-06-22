@@ -44,7 +44,9 @@ public class PlayerDiggingPacketIn extends WorldPacketIn {
 //            return;
 //        }
 
-        Block block = player.getWorld().getChunk(x >> 4, z >> 4).getBlock(x, y, z);
+        int chunkX = x >> 4;
+        int chunkZ = z >> 4;
+        Block block = player.getWorld().getChunk(chunkX, chunkZ).getBlock(x, y, z);
         if (block.id() == 0) {
             return;
         }
@@ -52,7 +54,7 @@ public class PlayerDiggingPacketIn extends WorldPacketIn {
         if (status == Status.STARTED_DIGGING) {
             getServer().getBlockHandlers().getBlockHandler(block.id()).onLeftClick(getServer(), block, player);
         } else if (status == Status.FINISHED_DIGGING) {
-            getServer().getBlockHandlers().getBlockHandler(block.id()).onBreak(getServer(), block, player);
+            player.getWorld().getChunk(chunkX, chunkZ).breakBlockAsPlayer(player, x, y, z);
         }
     }
 

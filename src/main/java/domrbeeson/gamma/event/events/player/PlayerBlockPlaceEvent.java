@@ -8,8 +8,8 @@ public class PlayerBlockPlaceEvent extends BlockChangeEvent {
 
     private final Player player;
 
-    public PlayerBlockPlaceEvent(Player player, Chunk chunk, int x, byte y, int z, byte currentId, byte currentMetadata, byte newId, byte newMetadata, boolean tick) {
-        super(chunk, x, y, z, currentId, currentMetadata, newId, newMetadata, tick);
+    public PlayerBlockPlaceEvent(Player player, Chunk chunk, int x, byte y, int z, byte currentId, byte currentMetadata, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ, boolean tick) {
+        super(chunk, x, y, z, currentId, currentMetadata, newId, newMetadata, clickedX, clickedY, clickedZ, tick);
         this.player = player;
     }
 

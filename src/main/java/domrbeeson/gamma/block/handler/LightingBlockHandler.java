@@ -2,6 +2,7 @@ package domrbeeson.gamma.block.handler;
 
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
+import domrbeeson.gamma.event.events.block.BlockChangeEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.world.Chunk;
@@ -21,8 +22,8 @@ public class LightingBlockHandler implements BlockHandler {
     }};
 
     @Override
-    public void onPlace(MinecraftServer server, Block block) {
-        byte lightValue = LIGHTING_VALUES.getOrDefault(block.id(), (byte) 0);
+    public void onPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ) {
+        byte lightValue = LIGHTING_VALUES.getOrDefault(newId, (byte) 0);
         // TODO update light values
     }
 

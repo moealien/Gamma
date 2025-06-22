@@ -74,7 +74,7 @@ public class PlayerBlockPlacePacketIn extends WorldPacketIn {
             placedZ = adjusted.getBlockZ();
         }
         short metadata = heldItem.metadata();
-        boolean placed = player.getWorld().getChunk(placedX >> 4, placedZ >> 4).placeBlockAsPlayer(player, placedX, placedY, placedZ, Material.get(heldId, heldItem.metadata()).blockId, (byte) metadata);
+        boolean placed = player.getWorld().getChunk(placedX >> 4, placedZ >> 4).placeBlockAsPlayer(player, placedX, placedY, placedZ, Material.get(heldId, heldItem.metadata()).blockId, (byte) metadata, clickedX, clickedY, clickedZ);
         if (placed) {
             player.getInventory().setHeldItem(Material.get(heldId, metadata).getItem(heldItem.amount() - 1));
         }

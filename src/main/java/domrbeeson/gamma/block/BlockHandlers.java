@@ -79,7 +79,7 @@ public final class BlockHandlers {
 
         SignBlockHandler signBlockHandler = new SignBlockHandler();
         register(Material.SIGN_POST, signBlockHandler);
-        register(Material.SIGN, signBlockHandler);
+        register(Material.WALL_SIGN, signBlockHandler);
 
         register(Material.PUMPKIN, DEFAULT_BLOCK_HANDLER);
 

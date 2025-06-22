@@ -1,9 +1,7 @@
 package domrbeeson.gamma.block.handler;
 
 import domrbeeson.gamma.MinecraftServer;
-import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.block.tile.TileEntity;
-import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
 
 public abstract class TileEntityBlockHandler<T extends TileEntity> implements BlockHandler {
@@ -15,13 +13,13 @@ public abstract class TileEntityBlockHandler<T extends TileEntity> implements Bl
     }
 
     @Override
-    public void onBreak(MinecraftServer server, Block block, Player player) {
-        TileEntity tile = getTileEntity(block.chunk(), block.x(), block.y(), block.z());
+    public void onBreak(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata) {
+        TileEntity tile = getTileEntity(chunk, x, y, z);
         if (tile == null) {
             return;
         }
-        block.chunk().removeTileEntity(tile);
-        BlockHandler.super.onBreak(server, block, player);
+        chunk.removeTileEntity(tile);
+        BlockHandler.super.onBreak(server, chunk, x, y, z, id, metadata);
     }
 
     public T getTileEntity(Chunk chunk, int x, int y, int z) {

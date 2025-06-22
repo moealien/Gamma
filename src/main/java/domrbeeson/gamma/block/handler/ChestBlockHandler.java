@@ -3,6 +3,7 @@ package domrbeeson.gamma.block.handler;
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.block.tile.ChestTileEntity;
+import domrbeeson.gamma.event.events.block.BlockChangeEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.player.Player;
@@ -18,8 +19,8 @@ public class ChestBlockHandler extends TileEntityBlockHandler<ChestTileEntity> {
     }
 
     @Override
-    public void onPlace(MinecraftServer server, Block block) {
-        block.chunk().addTileEntity(new ChestTileEntity((x, z) -> block.chunk(), block.x(), block.y(), block.z()));
+    public void onPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ) {
+        chunk.addTileEntity(new ChestTileEntity((_, _) -> chunk, x, y, z));
     }
 
     @Override

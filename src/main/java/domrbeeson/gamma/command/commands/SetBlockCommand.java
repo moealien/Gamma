@@ -27,6 +27,7 @@ public class SetBlockCommand implements Command {
 
         String idOrMaterial = args[0];
         Material material = null;
+        byte data = 0;
         try {
             material = Material.valueOf(idOrMaterial.toUpperCase());
         } catch (Exception e) {
@@ -41,8 +42,8 @@ public class SetBlockCommand implements Command {
                 }
 
                 short id = Short.parseShort(parts[0]);
-                short data = parts.length == 2 ? Short.parseShort(parts[1]) : 0;
-                material = Material.get(id, data);
+                data = parts.length == 2 ? Byte.parseByte(parts[1]) : 0;
+                material = Material.get(id, (short) 0);
             } catch (Exception e) {
                 sender.sendMessage("/setblock <ID[:data] or material>");
                 return;
@@ -56,6 +57,6 @@ public class SetBlockCommand implements Command {
 
         Player player = (Player) sender;
         Pos pos = player.getPos();
-        player.getWorld().setBlock(pos.getBlockX(), pos.getBlockY(), pos.getBlockZ(), material);
+        player.getWorld().setBlock(pos.getBlockX(), pos.getBlockY(), pos.getBlockZ(), material.blockId, data);
     }
 }

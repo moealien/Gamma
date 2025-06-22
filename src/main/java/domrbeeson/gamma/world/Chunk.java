@@ -232,6 +232,9 @@ public class Chunk implements Tickable, Viewable {
         blocks.put(Chunk.packChunkBlockCoords(x, y, z), new BlockChangeEvent(this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), id, metadata, update));
     }
 
+    /*
+        directlySetBlock does not remove tile entities from a world and bypasses chunk ticking - use with caution
+     */
     public void directlySetBlock(byte relativeX, int y, byte relativeZ, byte id, byte metadata) {
         directlySetBlock(relativeX, y, relativeZ, id, metadata, getSkyLight(relativeX, y, relativeZ), getBlockLight(relativeX, y, relativeZ));
     }
@@ -263,7 +266,7 @@ public class Chunk implements Tickable, Viewable {
         blocks.put(Chunk.packChunkBlockCoords(relativeX, y, relativeZ), new BlockBreakEvent(server, this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), true));
     }
 
-    public boolean placeBlockAsPlayer(Player player, int x, byte y, int z, byte id, byte metadata) {
+    public boolean placeBlockAsPlayer(Player player, int x, byte y, int z, byte id, byte metadata, int clickedX, byte clickedY, int clickedZ) {
         // TODO need the direction for things like sign posts and wall signs
         byte relativeX = Block.getChunkRelativeX(x);
         byte relativeZ = Block.getChunkRelativeZ(z);
@@ -274,7 +277,7 @@ public class Chunk implements Tickable, Viewable {
             return false;
         }
         Map<Long, BlockChangeEvent> blocks = scheduledBlockChanges.computeIfAbsent(server.getTick() + 1, t -> new HashMap<>());
-        blocks.put(packChunkBlockCoords(relativeX, y, relativeZ), new PlayerBlockPlaceEvent(player, this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), id, metadata, true));
+        blocks.put(packChunkBlockCoords(relativeX, y, relativeZ), new PlayerBlockPlaceEvent(player, this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), id, metadata, clickedX, clickedY, clickedZ, true));
         return true;
     }
 
@@ -449,6 +452,8 @@ public class Chunk implements Tickable, Viewable {
                     if (event instanceof PlayerBlockBreakEvent) {
                         toolId = ((PlayerBlockBreakEvent) event).getTool();
                     }
+                    blockHandlers.getBlockHandler(event.getCurrentId()).onBreak(server, this, x, y, z, event.getCurrentId(), event.getCurrentMetadata());
+
                     List<Item> drops = blockHandlers.getBlockHandler(event.getCurrentId()).getDrops(server, this, x, y, z, event.getCurrentId(), event.getCurrentMetadata(), toolId);
                     BlockDropItemEvent dropItemEvent = new BlockDropItemEvent(this, x, y, z, event.getCurrentId(), event.getCurrentMetadata(), drops);
                     final Pos itemSpawnPos = new Pos(x + 0.5, y + 0.5, z + 0.5);
@@ -465,7 +470,9 @@ public class Chunk implements Tickable, Viewable {
                         playerBlockPlaceEvent.getPlayer().sendPacket(new BlockChangePacketOut(event.getX(), event.getY(), event.getZ(), event.getNewId(), event.getNewMetadata()));
                         return;
                     }
+                    blockHandlers.getBlockHandler(event.getNewId()).onPlace(server, event, this, x, y, z, event.getNewId(), event.getNewMetadata(), event.getClickedX(), event.getClickedY(), event.getClickedZ());
                 }
+
 
                 setBlock(relativeX, y, relativeZ, event.getNewId());
                 setMetadata(relativeX, y, relativeZ, event.getNewMetadata());
@@ -476,38 +483,36 @@ public class Chunk implements Tickable, Viewable {
                     viewer.sendPacket(blockChangePacket);
                 }
 
-                blockHandlers.getBlockHandler(event.getNewId()).onPlace(server, block);
-
                 if (event.doUpdate()) {
                     BlockUpdateEvent updateEvent = new BlockUpdateEvent(ticks, block);
                     world.call(updateEvent);
                     if (!updateEvent.isCancelled()) {
                         server.getBlockHandlers().getBlockHandler(event.getNewId()).update(server, block, ticks);
                     }
-                }
 
-                // Update adjacent blocks
-                scheduleBlockUpdate(x, y + 1, z);
-                scheduleBlockUpdate(x, y - 1, z);
+                    // Update adjacent blocks
+                    scheduleBlockUpdate(x, y + 1, z);
+                    scheduleBlockUpdate(x, y - 1, z);
 
-                Chunk chunk = world.getLoadedChunk((x + 1) >> 4, z >> 4);
-                if (chunk != null) {
-                    chunk.scheduleBlockUpdate(x + 1, y, z);
-                }
+                    Chunk chunk = world.getLoadedChunk((x + 1) >> 4, z >> 4);
+                    if (chunk != null) {
+                        chunk.scheduleBlockUpdate(x + 1, y, z);
+                    }
 
-                chunk = world.getLoadedChunk((x - 1) >> 4, z >> 4);
-                if (chunk != null) {
-                    chunk.scheduleBlockUpdate(x - 1, y, z);
-                }
+                    chunk = world.getLoadedChunk((x - 1) >> 4, z >> 4);
+                    if (chunk != null) {
+                        chunk.scheduleBlockUpdate(x - 1, y, z);
+                    }
 
-                chunk = world.getLoadedChunk(x >> 4, (z + 1) >> 4);
-                if (chunk != null) {
-                    chunk.scheduleBlockUpdate(x, y, z + 1);
-                }
+                    chunk = world.getLoadedChunk(x >> 4, (z + 1) >> 4);
+                    if (chunk != null) {
+                        chunk.scheduleBlockUpdate(x, y, z + 1);
+                    }
 
-                chunk = world.getLoadedChunk(x >> 4, (z - 1) >> 4);
-                if (chunk != null) {
-                    chunk.scheduleBlockUpdate(x, y, z - 1);
+                    chunk = world.getLoadedChunk(x >> 4, (z - 1) >> 4);
+                    if (chunk != null) {
+                        chunk.scheduleBlockUpdate(x, y, z - 1);
+                    }
                 }
             });
 

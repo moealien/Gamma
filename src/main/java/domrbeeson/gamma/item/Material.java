@@ -291,7 +291,7 @@ public enum Material {
         this.maxStack = maxStack;
         this.recipes = recipes;
 
-        block = id <= Byte.MAX_VALUE && id > 0;
+        block = id <= Byte.MAX_VALUE;
         if (block) {
             this.blockId = (byte) id;
         } else {
