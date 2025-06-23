@@ -43,7 +43,7 @@ public class SignBlockHandler extends TileEntityBlockHandler<SignTileEntity> {
             event.setNewMetadata(Direction.EAST.getMetadata());
         } else {
             event.setNewId(Material.SIGN_POST.blockId);
-            event.setNewMetadata((byte) Math.floor((player.getPos().yaw() + 180f) * 0.04444444 + 0.5));
+            event.setNewMetadata((byte) Math.floor((player.getPos().yaw() + 180f) / 22.5 + 0.5));
         }
     }
 
