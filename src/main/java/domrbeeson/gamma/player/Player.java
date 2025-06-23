@@ -52,6 +52,7 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
     private boolean leaveBedAnimation = false;
     private boolean crouchAnimation = false;
     private boolean uncrouchAnimation = false;
+    private Pos editingSign = null;
 
     protected Player(Builder builder) {
         super(EntityType.PLAYER, builder.world, builder.pos, new LivingEntityMetadata(), new CollisionBox(builder.pos, 0.6, 1.8), builder.health);
@@ -374,6 +375,15 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
             sendMessage("drop cursor item here [" + cursorItem.amount() + "x " + cursorItem.id() + ":" + cursorItem.metadata() + "]");
             cursorItem = null;
         }
+    }
+
+    // Protection against sending sign update packets for random signs
+    public boolean isEditingSign(Pos pos) {
+        return pos.equals(editingSign);
+    }
+
+    public void setEditingSign(@Nullable Pos pos) {
+        editingSign = pos;
     }
 
     protected static Builder newBuilder(MinecraftServer server, PlayerConnection connection, String username, MinecraftVersion version, @Nullable ChatMessage joinMessage) {

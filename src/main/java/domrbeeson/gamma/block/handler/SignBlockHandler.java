@@ -4,11 +4,13 @@ import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.block.BlockHandlers;
 import domrbeeson.gamma.block.tile.SignTileEntity;
+import domrbeeson.gamma.entity.Pos;
 import domrbeeson.gamma.event.events.block.BlockChangeEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -21,11 +23,10 @@ public class SignBlockHandler extends TileEntityBlockHandler<SignTileEntity> {
     }
 
     @Override
-    public void onPlayerPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ, Player player) {
+    public void onPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ, @Nullable Player player) {
         chunk.addTileEntity(new SignTileEntity((_, _) -> chunk, x, y, z));
 
-        if (x == clickedX && y == clickedY && z == clickedZ) {
-            // Probably placed through code and not by a player, don't adjust it
+        if (player == null) {
             return;
         }
 
@@ -45,6 +46,8 @@ public class SignBlockHandler extends TileEntityBlockHandler<SignTileEntity> {
             event.setNewId(Material.SIGN_POST.blockId);
             event.setNewMetadata((byte) Math.floor((player.getPos().yaw() + 180f) / 22.5 + 0.5));
         }
+
+        player.setEditingSign(new Pos(x, y, z));
     }
 
     @Override

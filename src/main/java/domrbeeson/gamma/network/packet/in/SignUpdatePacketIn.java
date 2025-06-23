@@ -4,6 +4,7 @@ import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.tile.SignTileEntity;
 import domrbeeson.gamma.block.tile.TileEntity;
 import domrbeeson.gamma.network.packet.Packet;
+import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.player.PlayerConnection;
 
 import java.io.DataInputStream;
@@ -40,8 +41,9 @@ public class SignUpdatePacketIn extends WorldPacketIn {
             return;
         }
 
-        for (int i = 0; i < lines.length; i++) {
-            sign.setLine(i, lines[i]);
+        Player player = getServer().getPlayerManager().get(getConnection());
+        if (sign.setLines(lines, player)) {
+            player.setEditingSign(null);
         }
     }
 

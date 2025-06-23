@@ -6,6 +6,7 @@ import domrbeeson.gamma.event.events.block.BlockChangeEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface BlockHandler {
 
     }
 
-    default void onPlayerPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ, Player player) {
+    default void onPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ, @Nullable Player player) {
 
     }
 

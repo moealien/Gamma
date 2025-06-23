@@ -8,6 +8,7 @@ import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class ChestBlockHandler extends TileEntityBlockHandler<ChestTileEntity> {
     }
 
     @Override
-    public void onPlayerPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ, Player player) {
+    public void onPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ, @Nullable Player player) {
         chunk.addTileEntity(new ChestTileEntity((_, _) -> chunk, x, y, z));
     }
 
