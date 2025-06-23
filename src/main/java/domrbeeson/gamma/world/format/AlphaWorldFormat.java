@@ -84,9 +84,4 @@ public class AlphaWorldFormat extends NotchianWorldFormat {
         return 0;
     }
 
-    @Override
-    public void save() {
-        super.save(); // Save level.dat
-    }
-
 }
