@@ -470,7 +470,7 @@ public class Chunk implements Tickable, Viewable {
                         playerBlockPlaceEvent.getPlayer().sendPacket(new BlockChangePacketOut(event.getX(), event.getY(), event.getZ(), event.getNewId(), event.getNewMetadata()));
                         return;
                     }
-                    blockHandlers.getBlockHandler(event.getNewId()).onPlace(server, event, this, x, y, z, event.getNewId(), event.getNewMetadata(), event.getClickedX(), event.getClickedY(), event.getClickedZ());
+                    blockHandlers.getBlockHandler(event.getNewId()).onPlayerPlace(server, event, this, x, y, z, event.getNewId(), event.getNewMetadata(), event.getClickedX(), event.getClickedY(), event.getClickedZ(), playerBlockPlaceEvent.getPlayer());
                 }
 
 

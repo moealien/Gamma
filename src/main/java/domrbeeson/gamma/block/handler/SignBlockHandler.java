@@ -7,6 +7,7 @@ import domrbeeson.gamma.block.tile.SignTileEntity;
 import domrbeeson.gamma.event.events.block.BlockChangeEvent;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
+import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class SignBlockHandler extends TileEntityBlockHandler<SignTileEntity> {
     }
 
     @Override
-    public void onPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ) {
+    public void onPlayerPlace(MinecraftServer server, BlockChangeEvent event, Chunk chunk, int x, int y, int z, byte newId, byte newMetadata, int clickedX, byte clickedY, int clickedZ, Player player) {
         chunk.addTileEntity(new SignTileEntity((_, _) -> chunk, x, y, z));
 
         if (x == clickedX && y == clickedY && z == clickedZ) {
@@ -42,6 +43,7 @@ public class SignBlockHandler extends TileEntityBlockHandler<SignTileEntity> {
             event.setNewMetadata(Direction.EAST.getMetadata());
         } else {
             event.setNewId(Material.SIGN_POST.blockId);
+            event.setNewMetadata((byte) Math.floor((player.getPos().yaw() + 180f) * 0.04444444 + 0.5));
         }
     }
 
@@ -66,7 +68,7 @@ public class SignBlockHandler extends TileEntityBlockHandler<SignTileEntity> {
             }
             case 68 -> {
                 Chunk checkChunk;
-                switch (Direction.getDirectionFromMetadata(block.metadata())) {
+                switch (Direction.getDirectionFromMetadata(block.metadata())) { // Could just use numbers but getting the Direction is more readable
                     case SOUTH:
                         checkChunk = chunk.getWorld().getLoadedChunk(x >> 4, (z - 1) >> 4);
                         if (checkChunk != null && !blockHandlers.getBlockHandler(checkChunk.getBlockId(x, y, z - 1)).isSolid()) {
@@ -119,7 +121,7 @@ public class SignBlockHandler extends TileEntityBlockHandler<SignTileEntity> {
         }
 
         public static Direction getDirectionFromMetadata(byte metadata) {
-            if (metadata > 3 || metadata < 0) {
+            if (metadata - 2 > values().length || metadata < 0) {
                 return NORTH;
             }
             return values()[metadata - 2];
