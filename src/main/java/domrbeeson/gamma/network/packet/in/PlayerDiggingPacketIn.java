@@ -5,6 +5,7 @@ import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.network.packet.Packet;
 import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.player.PlayerConnection;
+import domrbeeson.gamma.world.Chunk;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -46,7 +47,12 @@ public class PlayerDiggingPacketIn extends WorldPacketIn {
 
         int chunkX = x >> 4;
         int chunkZ = z >> 4;
-        Block block = player.getWorld().getChunk(chunkX, chunkZ).getBlock(x, y, z);
+        Chunk chunk = player.getWorld().getLoadedChunk(chunkX, chunkZ);
+        if (chunk == null) {
+            return;
+        }
+
+        Block block = chunk.getBlock(x, y, z);
         if (block.id() == 0) {
             return;
         }
@@ -54,7 +60,7 @@ public class PlayerDiggingPacketIn extends WorldPacketIn {
         if (status == Status.STARTED_DIGGING) {
             getServer().getBlockHandlers().getBlockHandler(block.id()).onLeftClick(getServer(), block, player);
         } else if (status == Status.FINISHED_DIGGING) {
-            player.getWorld().getChunk(chunkX, chunkZ).breakBlockAsPlayer(player, x, y, z);
+            chunk.breakBlockAsPlayer(player, x, y, z);
         }
     }
 
