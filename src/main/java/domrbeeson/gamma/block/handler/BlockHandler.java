@@ -44,6 +44,8 @@ public interface BlockHandler {
 
     }
 
+    // TODO on walk for farmland and pressure plates?
+
     default List<Item> getDrops(MinecraftServer server, Chunk chunk, int x, int y, int z, byte blockId, byte blockMetadata, short toolId) {
         return List.of();
     }
@@ -73,6 +75,10 @@ public interface BlockHandler {
         return false;
     }
 
+    default boolean isTransparent() {
+        return false;
+    }
+
     default byte getEmittedLight() {
         return 0;
     }
@@ -80,4 +86,5 @@ public interface BlockHandler {
     default boolean canPower() {
         return false;
     }
+
 }

@@ -6,8 +6,8 @@ import domrbeeson.gamma.item.Material;
 
 public class CookedFishItem extends Item implements FoodItem {
 
-    public CookedFishItem(int amount) {
-        super(Material.COOKED_FISH, amount);
+    public CookedFishItem(short durability, int amount) {
+        super(Material.COOKED_FISH, durability, amount);
     }
 
     @Override

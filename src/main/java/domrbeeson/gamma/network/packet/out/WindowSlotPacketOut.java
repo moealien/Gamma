@@ -14,7 +14,7 @@ public class WindowSlotPacketOut extends PacketOut {
     private final short slot, itemId, metadata;
 
     public WindowSlotPacketOut(InventoryType type, short slot, Item item) {
-        this(type, slot, item.id(), item.metadata(), item.amount());
+        this(type, slot, item.getId(), item.getMetadata(), item.getAmount());
     }
 
     public WindowSlotPacketOut(InventoryType type, short slot, short itemId, short metadata, byte amount) {

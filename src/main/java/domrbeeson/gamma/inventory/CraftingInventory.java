@@ -57,13 +57,13 @@ public class CraftingInventory extends Inventory {
         boolean inCraftingGrid = slot >= craftingGrid[0][0] && slot <= craftingGrid[craftingGrid.length - 1][craftingGrid.length - 1];
         int beforeId = 0;
         if (inCraftingGrid) {
-            beforeId = getSlot(slot).id();
+            beforeId = getSlot(slot).getId();
         }
         boolean updated = super.setSlot(slot, item, update);
         if (inCraftingGrid) {
-            if (beforeId == 0 && (item != null && item.id() > 0)) {
+            if (beforeId == 0 && (item != null && item.getId() > 0)) {
                 craftingSlotsPopulated++;
-            } else if (beforeId > 0 && (item == null || item.id() == 0)) {
+            } else if (beforeId > 0 && (item == null || item.getId() == 0)) {
                 craftingSlotsPopulated--;
             }
             updateCraftingGrid();
@@ -81,20 +81,20 @@ public class CraftingInventory extends Inventory {
             return;
         }
         Item output = getOutput();
-        if (output != null && output.id() != 0) {
+        if (output != null && output.getId() != 0) {
             Player player = event.getPlayer();
             Item cursor = player.getCursorItem();
-            if (cursor.id() > 0) {
-                Material cursorMaterial = Material.get(cursor.id(), cursor.metadata());
-                if (cursor.id() != output.id() || cursor.metadata() != output.metadata()) {
+            if (cursor.getId() > 0) {
+                Material cursorMaterial = Material.get(cursor.getId(), cursor.getMetadata());
+                if (cursor.getId() != output.getId() || cursor.getMetadata() != output.getMetadata()) {
                     return;
                 }
-                int oldAmount = cursor.amount();
-                int newAmount = Math.min(cursor.amount() + output.amount(), cursorMaterial.maxStack);
+                int oldAmount = cursor.getAmount();
+                int newAmount = Math.min(cursor.getAmount() + output.getAmount(), cursorMaterial.maxStack);
                 if (oldAmount == newAmount) {
                     return;
                 }
-                int remainder = cursor.amount() + output.amount() - newAmount;
+                int remainder = cursor.getAmount() + output.getAmount() - newAmount;
                 player.setCursorItem(cursorMaterial.getItem(newAmount));
                 setOutput(cursorMaterial.getItem(remainder));
             } else {
@@ -106,7 +106,7 @@ public class CraftingInventory extends Inventory {
                     if (populatedSlots[x][y] == null) {
                         continue;
                     }
-                    setSlot(craftingGrid[x][y], Material.get(populatedSlots[x][y].id(), populatedSlots[x][y].metadata()).getItem(populatedSlots[x][y].amount() - 1));
+                    setSlot(craftingGrid[x][y], Material.get(populatedSlots[x][y].getId(), populatedSlots[x][y].getMetadata()).getItem(populatedSlots[x][y].getAmount() - 1));
                 }
             }
         }
@@ -119,11 +119,11 @@ public class CraftingInventory extends Inventory {
             for (int x = 0; x < craftingGrid.length; x++) {
                 for (int y = 0; y < craftingGrid[x].length; y++) {
                     item = getSlot(craftingGrid[x][y]);
-                    if (item.id() == 0) {
+                    if (item.getId() == 0) {
                         continue;
                     }
                     // TODO drop crafting inventory item on the ground
-                    System.out.println("TODO drop " + item.amount() + "x " + item.id() + ":" + item.metadata() + " from crafting inventory");
+                    System.out.println("TODO drop " + item.getAmount() + "x " + item.getId() + ":" + item.getMetadata() + " from crafting inventory");
                     setSlot(craftingGrid[x][y], Item.AIR);
                 }
             }

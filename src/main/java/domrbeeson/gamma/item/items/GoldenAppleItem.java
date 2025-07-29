@@ -6,7 +6,7 @@ import domrbeeson.gamma.item.Material;
 
 public class GoldenAppleItem extends Item implements FoodItem {
 
-    public GoldenAppleItem(int amount) {
+    public GoldenAppleItem(short metadata, int amount) {
         super(Material.GOLDEN_APPLE, amount);
     }
 

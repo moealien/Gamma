@@ -141,7 +141,7 @@ public abstract class NotchianWorldFormat implements WorldFormat {
     }
 
     public static int getBlockIndex(int x, int y, int z) {
-        return getBlockIndex(Block.getChunkRelativeX(x), y, Block.getChunkRelativeZ(z));
+        return getBlockIndex(Block.getChunkRelativeCoord(x), y, Block.getChunkRelativeCoord(z));
     }
 
     public static int getBlockIndex(byte relativeX, int y, byte relativeZ) {

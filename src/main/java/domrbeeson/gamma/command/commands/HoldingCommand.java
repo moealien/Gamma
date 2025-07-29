@@ -20,6 +20,6 @@ public class HoldingCommand implements Command {
         }
 
         Item heldItem = player.getInventory().getHeldItem();
-        player.sendMessage("ID: " + heldItem.id() + ", Material: " + Material.get(heldItem.id(), heldItem.metadata()).name());
+        player.sendMessage("ID: " + heldItem.getId() + ", Material: " + Material.get(heldItem.getId(), heldItem.getMetadata()).name());
     }
 }

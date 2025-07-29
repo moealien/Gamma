@@ -41,8 +41,8 @@ public class SugarCaneBlockHandler extends PlantStackBlockHandler {
 
     @Override
     public void randomTick(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, long tick) {
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
 
         if (chunk.getBlockId(relativeX, y + 1, relativeZ) != id && chunk.getBlockId(relativeX, y - GROW_HEIGHT + 1, relativeZ) != id) {
             // Sugar cane grows after receiving 16 random ticks

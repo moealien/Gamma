@@ -21,7 +21,7 @@ public abstract class TileEntity implements Tickable {
     }
 
     public Chunk getChunk() {
-        return chunk.get(Block.getChunkRelativeX(x), Block.getChunkRelativeZ(z));
+        return chunk.get(Block.getChunkRelativeCoord(x), Block.getChunkRelativeCoord(z));
     }
 
     public int getX() {
@@ -37,8 +37,8 @@ public abstract class TileEntity implements Tickable {
     }
 
     public static short packLocation(int x, int y, int z) {
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         return (short) ((relativeX & 15) << 4 | (relativeZ & 15) | y << 8);
     }
 

@@ -34,9 +34,9 @@ public class NBTItem extends NBTHealthEntity {
             // TODO figure out how item health works
             health = 5;
             age = (short) (entity.getWorld().getTime() - item.getSpawnTime());
-            itemId = item.getItem().id();
-            amount = item.getItem().amount();
-            damage = item.getItem().metadata();
+            itemId = item.getItem().getId();
+            amount = item.getItem().getAmount();
+            damage = item.getItem().getMetadata();
         } else {
             health = 5;
             age = 0;

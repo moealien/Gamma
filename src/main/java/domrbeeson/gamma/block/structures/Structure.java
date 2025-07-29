@@ -27,7 +27,7 @@ public class Structure {
         for (StructureBlock sb : blocks) {
             blockPos = pos.add(new Pos(sb.xOffset, sb.yOffset, sb.zOffset));
             chunk = world.getChunk(blockPos.getChunkX(), blockPos.getChunkZ());
-            chunk.directlySetBlock(Block.getChunkRelativeX(blockPos.getBlockX()), blockPos.getBlockY(), Block.getChunkRelativeZ(blockPos.getBlockZ()), sb.id, sb.metadata);
+            chunk.directlySetBlock(Block.getChunkRelativeCoord(blockPos.getBlockX()), blockPos.getBlockY(), Block.getChunkRelativeCoord(blockPos.getBlockZ()), sb.id, sb.metadata);
         }
     }
 

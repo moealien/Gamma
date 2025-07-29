@@ -97,7 +97,7 @@ public abstract class PacketIn {
         register(Packet.PLAYER_LOOK, PlayerLookPacketIn::new);
         register(Packet.PLAYER_POSITION_AND_LOOK, PlayerPositionAndLookPacketIn::new);
         register(Packet.PLAYER_DIGGING, PlayerDiggingPacketIn::new);
-        register(Packet.PLAYER_BLOCK_PLACE, PlayerBlockPlacePacketIn::new);
+        register(Packet.PLAYER_BLOCK_PLACE, PlayerRightClickBlockPacketIn::new);
         register(Packet.PLAYER_HELD_ITEM_CHANGE, PlayerHeldItemChangePacketIn::new);
 
         register(Packet.PLAYER_ANIMATION, PlayerAnimationPacketIn::new);

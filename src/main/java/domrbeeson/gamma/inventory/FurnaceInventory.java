@@ -87,11 +87,11 @@ public class FurnaceInventory extends ProgressBarInventory {
         SmeltableItem input = (SmeltableItem) getInput();
 
         Item output = getOutput();
-        if (output.id() != 0 && output.amount() >= Material.get(output.id(), output.metadata()).maxStack) {
+        if (output.getId() != 0 && output.getAmount() >= Material.get(output.getId(), output.getMetadata()).maxStack) {
             return;
         }
 
-        Fuel fuel = Fuel.get(getFuel().id());
+        Fuel fuel = Fuel.get(getFuel().getId());
         if (fuel == null) {
             progress = 0;
             return;
@@ -121,11 +121,11 @@ public class FurnaceInventory extends ProgressBarInventory {
     }
 
     private int decreaseFuel(Fuel fuel, SmeltableItem input) {
-        byte newFuelAmount = (byte) (input.amount() - 1);
+        byte newFuelAmount = (byte) (input.getAmount() - 1);
         if (newFuelAmount <= 0) {
             setInput(fuel.getItemAfterSmelting());
         } else {
-            setInput(Material.get(input.id(), input.metadata()).getItem(newFuelAmount));
+            setInput(Material.get(input.getId(), input.getMetadata()).getItem(newFuelAmount));
         }
         return newFuelAmount;
     }

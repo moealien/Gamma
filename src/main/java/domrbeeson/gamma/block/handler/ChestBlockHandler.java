@@ -31,7 +31,7 @@ public class ChestBlockHandler extends TileEntityBlockHandler<ChestTileEntity> {
         ChestTileEntity tile = getTileEntity(chunk, x, y, z);
         if (tile != null) {
             for (Item item : tile.getInventory().getSlots()) {
-                if (item == null || item.id() == 0) {
+                if (item == null || item.getId() == 0) {
                     continue;
                 }
                 drops.add(item);

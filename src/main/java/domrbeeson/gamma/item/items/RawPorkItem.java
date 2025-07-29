@@ -6,7 +6,7 @@ import domrbeeson.gamma.item.SmeltableItem;
 
 public class RawPorkItem extends SmeltableItem implements FoodItem {
 
-    public RawPorkItem(int amount) {
+    public RawPorkItem(short metadata, int amount) {
         super(Material.RAW_PORK, amount);
     }
 

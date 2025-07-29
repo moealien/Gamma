@@ -63,6 +63,7 @@ public class FluidBlockHandler implements BlockHandler {
 
     @Override
     public boolean update(MinecraftServer server, Block block, long ticks) {
+        // TODO this shit makes memory usage go nuts
         int x = block.x();
         int y = block.y();
         int z = block.z();
@@ -83,7 +84,10 @@ public class FluidBlockHandler implements BlockHandler {
         }
 
         Direction holeDirection = getHoleDirection(block.world(), x, y, z, height);
-        System.out.println("hole direction: " + holeDirection.name());
+        if (holeDirection == null) {
+            return true;
+        }
+//        System.out.println("hole direction: " + holeDirection.name());
 
         if (holeDirection == Direction.WEST || holeDirection == Direction.NONE) {
             flow(ticks, world, x + 1, y, z, height);
@@ -104,7 +108,7 @@ public class FluidBlockHandler implements BlockHandler {
     @Nullable
     private Direction getHoleDirection(World world, int x, int y, int z, byte height) {
         int checkDistance = (MAX_FLOW_DISTANCE - height) / dropoff.get(world.getFormat().getDimension());
-        System.out.println("checkDistance: " + checkDistance);
+//        System.out.println("checkDistance: " + checkDistance);
         if (checkDistance == 0) {
             return null;
         }

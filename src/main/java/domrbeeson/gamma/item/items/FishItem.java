@@ -6,7 +6,7 @@ import domrbeeson.gamma.item.SmeltableItem;
 
 public class FishItem extends SmeltableItem implements FoodItem {
 
-    public FishItem(int amount) {
+    public FishItem(short metadata, int amount) {
         super(Material.FISH, amount);
     }
 

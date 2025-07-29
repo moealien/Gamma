@@ -35,12 +35,14 @@ public class ItemEntity extends HealthEntity<EntityMetadata> {
         long time = getWorld().getTime();
         if (time >= getSpawnTime() + TICKS_BEFORE_PICKUP) {
             Chunk chunk = getWorld().getLoadedChunk(getPos().getChunkX(), getPos().getChunkZ());
-            for (Player player : chunk.getViewers()) { // TODO check adjacent chunk if item is near a chunk border
-                if (getCollisionBox().collides(player.getCollisionBox())) {
-                    player.getInventory().addItem(item);
-                    player.sendPacket(new PlayerPickupItemAnimationPacketOut(player, this));
-                    remove();
-                    break;
+            if (chunk != null) {
+                for (Player player : chunk.getViewers()) { // TODO check adjacent chunk if item is near a chunk border
+                    if (getCollisionBox().collides(player.getCollisionBox())) {
+                        player.getInventory().addItem(item);
+                        player.sendPacket(new PlayerPickupItemAnimationPacketOut(player, this));
+                        remove();
+                        break;
+                    }
                 }
             }
         } else if (ticks - getSpawnTime() >= TICKS_BEFORE_DESPAWN) {

@@ -12,4 +12,9 @@ public class AirBlockHandler implements BlockHandler {
         return true;
     }
 
+    @Override
+    public boolean isTransparent() {
+        return true;
+    }
+
 }

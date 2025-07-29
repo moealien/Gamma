@@ -28,7 +28,6 @@ import domrbeeson.gamma.network.packet.out.SignUpdatePacketOut;
 import domrbeeson.gamma.player.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -122,7 +121,7 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public byte getBlockId(int x, int y, int z) {
-        return getBlockId(Block.getChunkRelativeX(x), y, Block.getChunkRelativeZ(z));
+        return getBlockId(Block.getChunkRelativeCoord(x), y, Block.getChunkRelativeCoord(z));
     }
 
     public byte getBlockId(byte x, int y, byte z) {
@@ -133,8 +132,8 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public byte getBlockMetadata(int x, int y, int z) {
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         return metadata[relativeX][y][relativeZ];
     }
 
@@ -145,8 +144,20 @@ public class Chunk implements Tickable, Viewable {
         return metadata[x][y][z];
     }
 
+    public byte getBlockLight(int x, int y, int z) {
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
+        return (byte)(blockAndSkyLight[relativeX][y][relativeZ] >> 4);
+    }
+
     public byte getBlockLight(byte x, int y, byte z) {
         return (byte)(blockAndSkyLight[x][y][z] >> 4);
+    }
+
+    public byte getSkyLight(int x, int y, int z) {
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
+        return (byte)(blockAndSkyLight[relativeX][y][relativeZ] & 15);
     }
 
     public byte getSkyLight(byte x, int y, byte z) {
@@ -154,8 +165,8 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public Block getBlock(int x, int y, int z) {
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         // TODO if Y is above build limit, return air
         return new Block(
                 world,
@@ -183,8 +194,8 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public Material getMaterial(int x, int y, int z) {
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         return getMaterial(relativeX, (byte) y, relativeZ);
     }
 
@@ -200,7 +211,7 @@ public class Chunk implements Tickable, Viewable {
         if (!material.block) {
             return;
         }
-        setBlock(x, y, z, material.blockId, (byte) material.metadata, true);
+        setBlock(x, y, z, material.blockId, (byte) material.metadataMin, true);
     }
 
     public void setBlock(int x, int y, int z, byte id, byte metadata) {
@@ -223,8 +234,8 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public void setBlock(int x, int y, int z, byte id, byte metadata, boolean update) {
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {
             return;
         }
@@ -247,18 +258,22 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public void breakBlockAsPlayer(Player player, int x, int y, int z) {
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        breakBlockAsPlayer(player, x, y, z, false);
+    }
+
+    public void breakBlockAsPlayer(Player player, int x, int y, int z, boolean reduceToolDurability) {
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {
             return;
         }
         Map<Long, BlockChangeEvent> blocks = scheduledBlockChanges.computeIfAbsent(server.getTick() + 1, t -> new HashMap<>());
-        blocks.put(Chunk.packChunkBlockCoords(x, y, z), new PlayerBlockBreakEvent(server, player, this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), true, player.getInventory().getHeldItem().id()));
+        blocks.put(Chunk.packChunkBlockCoords(x, y, z), new PlayerBlockBreakEvent(server, player, this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), true, player.getInventory().getHeldItem().getId(), reduceToolDurability));
     }
 
     public void breakBlock(int x, int y, int z) {
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         if (!areCoordsInThisChunk(relativeX, (byte) y, relativeZ)) {
             return;
         }
@@ -268,8 +283,8 @@ public class Chunk implements Tickable, Viewable {
 
     public boolean placeBlockAsPlayer(Player player, int x, byte y, int z, byte id, byte metadata, int clickedX, byte clickedY, int clickedZ) {
         // TODO need the direction for things like sign posts and wall signs
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {
             return false;
         }
@@ -282,8 +297,8 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public void rightClickAsPlayer(Player player, int x, byte y, int z) {
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {
             return;
         }
@@ -299,7 +314,7 @@ public class Chunk implements Tickable, Viewable {
 //    }
 
     public static long packChunkBlockCoords(int x, int y, int z) {
-        return packChunkBlockCoords(Block.getChunkRelativeX(x), y, Block.getChunkRelativeZ(z));
+        return packChunkBlockCoords(Block.getChunkRelativeCoord(x), y, Block.getChunkRelativeCoord(z));
     }
 
     public static long packChunkBlockCoords(byte x, int y, byte z) {
@@ -444,13 +459,15 @@ public class Chunk implements Tickable, Viewable {
                 int x = event.getX();
                 int y = event.getY();
                 int z = event.getZ();
-                byte relativeX = Block.getChunkRelativeX(x);
-                byte relativeZ = Block.getChunkRelativeZ(z);
+                byte relativeX = Block.getChunkRelativeCoord(x);
+                byte relativeZ = Block.getChunkRelativeCoord(z);
 
                 if (event instanceof BlockBreakEvent) {
                     short toolId = 0;
-                    if (event instanceof PlayerBlockBreakEvent) {
-                        toolId = ((PlayerBlockBreakEvent) event).getTool();
+                    if (event instanceof PlayerBlockBreakEvent pbbe) {
+                        toolId = pbbe.getTool();
+                        Item heldItem = pbbe.getPlayer().getInventory().getHeldItem();
+                        pbbe.getPlayer().getInventory().setHeldItem(heldItem.getMaterial().getItem());
                     }
                     blockHandlers.getBlockHandler(event.getCurrentId()).onBreak(server, this, x, y, z, event.getCurrentId(), event.getCurrentMetadata());
 
@@ -529,7 +546,9 @@ public class Chunk implements Tickable, Viewable {
                 int x = event.getX();
                 byte y = event.getY();
                 int z = event.getZ();
-                blockHandlers.getBlockHandler(getBlockId(Block.getChunkRelativeX(x), y, Block.getChunkRelativeZ(z))).onRightClick(server, getBlock(x, y, z), event.getPlayer());
+                byte id = getBlockId(x, y, z);
+                System.out.println("right click, block handler: " + blockHandlers.getBlockHandler(id).getClass().getSimpleName());
+                blockHandlers.getBlockHandler(id).onRightClick(server, getBlock(x, y, z), event.getPlayer());
             });
             scheduledBlockRightClicks.remove(ticks);
         }
@@ -602,9 +621,8 @@ public class Chunk implements Tickable, Viewable {
 //                entities.forEach(entity -> entity.addViewer(player));
 //            });
 
-            Set<Chunk> playerChunks = PLAYERS_VIEWING_CHUNKS.getOrDefault(player, new HashSet<>());
+            Set<Chunk> playerChunks = PLAYERS_VIEWING_CHUNKS.computeIfAbsent(player, p -> new HashSet<>());
             playerChunks.add(this);
-            PLAYERS_VIEWING_CHUNKS.put(player, playerChunks);
         }
     }
 
@@ -622,7 +640,7 @@ public class Chunk implements Tickable, Viewable {
                 PLAYERS_VIEWING_CHUNKS.remove(player);
             } else {
                 playerChunks.remove(this);
-                PLAYERS_VIEWING_CHUNKS.put(player, playerChunks);
+//                PLAYERS_VIEWING_CHUNKS.put(player, playerChunks);
             }
         }
     }
@@ -655,14 +673,18 @@ public class Chunk implements Tickable, Viewable {
         world.markChunkForSaving(this);
     }
 
-//    public static Collection<Chunk> getPlayerViewingChunks(Player player) {
-//        synchronized (PLAYERS_VIEWING_CHUNKS) {
-//            return PLAYERS_VIEWING_CHUNKS.getOrDefault(player, new HashSet<>());
-//        }
-//    }
+    public boolean isInChunk(int x, int z) {
+        return chunkIndex == getIndex(x, z);
+    }
+
+    public static Collection<Chunk> getPlayerViewingChunks(Player player) {
+        synchronized (PLAYERS_VIEWING_CHUNKS) {
+            return PLAYERS_VIEWING_CHUNKS.getOrDefault(player, new HashSet<>());
+        }
+    }
 
     public static long getIndex(int x, int z) {
-        return ByteBuffer.allocate(Long.BYTES).putInt(x).putInt(z).getLong(0);
+        return ((long) x) << 32 | z & 0xffffffffL;
     }
 
     public static class Builder {

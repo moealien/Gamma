@@ -33,11 +33,12 @@ public final class BlockHandlers {
             }}
         );
         InstantBreakBlockHandler instantBreakHandler = new InstantBreakBlockHandler();
+        FarmlandBlockHandler farmlandBlockHandler = new FarmlandBlockHandler();
 
         register(Material.AIR, new AirBlockHandler());
         register(Material.STONE, new ToolsDropBlockHandler(Material.COBBLESTONE, Material.WOOD_PICKAXE.id, Material.STONE_PICKAXE.id, Material.IRON_PICKAXE.id, Material.GOLD_PICKAXE.id, Material.DIAMOND_PICKAXE.id));
         register(Material.GRASS, new GrassBlockHandler());
-        register(Material.DIRT, DEFAULT_BLOCK_HANDLER);
+        register(Material.DIRT, farmlandBlockHandler);
         register(Material.COBBLESTONE, new ToolsDropBlockHandler(Material.COBBLESTONE, Material.WOOD_PICKAXE.id, Material.STONE_PICKAXE.id, Material.IRON_PICKAXE.id, Material.GOLD_PICKAXE.id, Material.DIAMOND_PICKAXE.id));
         register(Material.OAK_PLANKS, DEFAULT_BLOCK_HANDLER);
         register(Material.OAK_SAPLING, new SaplingBlockHandler());
@@ -63,6 +64,7 @@ public final class BlockHandlers {
         register(Material.REDSTONE_TORCH, new RedstoneTorchBlockHandler());
 
         register(Material.CRAFTING_TABLE, new CraftingTableBlockHandler());
+        register(Material.FARMLAND, farmlandBlockHandler);
         register(Material.FURNACE, new FurnaceBlockHandler());
         register(Material.FURNACE_BURNING, new FurnaceBlockHandler());
 

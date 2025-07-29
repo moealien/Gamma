@@ -41,7 +41,6 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
     private final CompletableFuture<Void> loading = new CompletableFuture<>();
     private final Set<Chunk> queuedViewChunks = new HashSet<>();
     private final List<Chunk> queuedRemoveChunks = new ArrayList<>();
-    private final Set<Chunk> viewingChunks = new HashSet<>();
     private final PlayerInventory inventory;
 
     private @Nullable Inventory openInventory = null; // This will never be the player's inventory - that is a special case
@@ -199,28 +198,24 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
         World world = getWorld();
         int sentChunks = 0;
         Chunk chunk;
-        synchronized (queuedViewChunks) {
-            while (queuedViewChunks.iterator().hasNext() && sentChunks < SEND_CHUNKS_PER_TICK) {
-                chunk = queuedViewChunks.iterator().next();
-                queuedViewChunks.remove(chunk);
-                if (!world.isChunkLoaded(chunk.getChunkX(), chunk.getChunkZ())) {
-                    continue;
-                }
-                if (chunk.isViewing(this)) {
-                    continue;
-                }
-                chunk.addViewer(this);
-                sentChunks++;
+        while (queuedViewChunks.iterator().hasNext() && sentChunks < SEND_CHUNKS_PER_TICK) {
+            chunk = queuedViewChunks.iterator().next();
+            queuedViewChunks.remove(chunk);
+            if (!world.isChunkLoaded(chunk.getChunkX(), chunk.getChunkZ())) {
+                continue;
             }
+            if (chunk.isViewing(this)) {
+                continue;
+            }
+            chunk.addViewer(this);
+            sentChunks++;
         }
         sentChunks = 0;
-        synchronized (queuedRemoveChunks) {
-            while (queuedRemoveChunks.iterator().hasNext() && sentChunks < SEND_CHUNKS_PER_TICK) {
-                chunk = queuedRemoveChunks.iterator().next();
-                queuedRemoveChunks.remove(chunk);
-                chunk.removeViewer(this);
-                sentChunks++;
-            }
+        while (queuedRemoveChunks.iterator().hasNext() && sentChunks < SEND_CHUNKS_PER_TICK) {
+            chunk = queuedRemoveChunks.iterator().next();
+            queuedRemoveChunks.remove(chunk);
+            chunk.removeViewer(this);
+            sentChunks++;
         }
 
         inventory.tick(ticks);
@@ -247,7 +242,7 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
     @Override
     public void onChunkChange(Chunk oldChunk, Chunk newChunk) {
         queuedViewChunks.clear();
-        queuedRemoveChunks.clear();
+//        queuedRemoveChunks.clear();
         updateSurroundingChunks(newChunk.getChunkX(), newChunk.getChunkZ());
         List<Player> viewers = new ArrayList<>(getViewers());
         viewers.forEach(viewer -> {
@@ -301,7 +296,7 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
         }
 
         int chunkX, chunkZ;
-        for (Chunk chunk : viewingChunks) {
+        for (Chunk chunk : Chunk.getPlayerViewingChunks(this)) {
 //            if (chunk == null) {
 //                continue;
 //            }
@@ -318,10 +313,6 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
         }
     }
 
-    public Set<Chunk> getViewingChunks() {
-        return viewingChunks;
-    }
-
     public void sendPacket(PacketOut packet) {
         connection.getWriter().send(getProtocol(), packet);
     }
@@ -331,7 +322,7 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
     }
 
     public void setCursorItem(@Nullable Item cursorItem) {
-        if (cursorItem == null || (cursorItem.id() == 0 || cursorItem.amount() == 0)) {
+        if (cursorItem == null || (cursorItem.getId() == 0 || cursorItem.getAmount() == 0)) {
             cursorItem = Item.AIR;
         }
         this.cursorItem = cursorItem;
@@ -370,9 +361,9 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
             openInventory.removeViewer(this);
             openInventory = null;
         }
-        if (cursorItem.id() > 0) {
+        if (cursorItem.getId() > 0) {
             // TODO drop cursor item
-            sendMessage("drop cursor item here [" + cursorItem.amount() + "x " + cursorItem.id() + ":" + cursorItem.metadata() + "]");
+            sendMessage("drop cursor item here [" + cursorItem.getAmount() + "x " + cursorItem.getId() + ":" + cursorItem.getMetadata() + "]");
             cursorItem = null;
         }
     }
@@ -384,6 +375,26 @@ public class Player extends LivingEntity<LivingEntityMetadata> implements Comman
 
     public void setEditingSign(@Nullable Pos pos) {
         editingSign = pos;
+    }
+
+    public void damageTool() {
+        damageTool(1);
+    }
+
+    public void damageTool(int amount) {
+        PlayerInventory inv = getInventory();
+        Item heldItem = inv.getHeldItem();
+        int newMeta = heldItem.getMetadata() + amount;
+        if (newMeta >= heldItem.getMaterial().metadataMax) {
+            int newAmount = heldItem.getAmount() - 1;
+            if (newAmount <= 0) {
+                inv.setHeldItem(Item.AIR);
+            } else {
+                inv.setHeldItem(heldItem.getMaterial().getItem(newAmount));
+            }
+        } else {
+            inv.setHeldItem(heldItem.getMaterial().getItem(newMeta, heldItem.getAmount()));
+        }
     }
 
     protected static Builder newBuilder(MinecraftServer server, PlayerConnection connection, String username, MinecraftVersion version, @Nullable ChatMessage joinMessage) {

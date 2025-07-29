@@ -7,7 +7,7 @@ public abstract class SmeltableItem extends Item {
     }
 
     public SmeltableItem(Material material, int amount) {
-        this(material.id, material.metadata, (byte) amount);
+        this(material.id, material.metadataMin, (byte) amount);
     }
 
     public SmeltableItem(short id, short metadata) {

@@ -48,9 +48,9 @@ public class NBTChestMinecart extends NBTMinecart {
         itemSlots.forEach((slot, item) -> {
             Map<String, NBTTag> itemTags = new HashMap<>();
             itemTags.put("Slot", new NBTByte(slot));
-            itemTags.put("id", new NBTShort(item.id()));
-            itemTags.put("Count", new NBTByte(item.amount()));
-            itemTags.put("Damage", new NBTShort(item.metadata()));
+            itemTags.put("id", new NBTShort(item.getId()));
+            itemTags.put("Count", new NBTByte(item.getAmount()));
+            itemTags.put("Damage", new NBTShort(item.getMetadata()));
             items.add(new NBTCompound(itemTags));
         });
         tags.put("Items", new NBTCompound(tags));

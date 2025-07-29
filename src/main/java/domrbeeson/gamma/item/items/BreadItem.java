@@ -6,7 +6,7 @@ import domrbeeson.gamma.item.Material;
 
 public class BreadItem extends Item implements FoodItem {
 
-    public BreadItem(int amount) {
+    public BreadItem(short metadata, int amount) {
         super(Material.BREAD, amount);
     }
 

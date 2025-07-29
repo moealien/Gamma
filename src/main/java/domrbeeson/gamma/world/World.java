@@ -23,6 +23,7 @@ import domrbeeson.gamma.task.Scheduler;
 import domrbeeson.gamma.world.format.InvalidWorldFormatException;
 import domrbeeson.gamma.world.format.WorldFormat;
 import domrbeeson.gamma.world.terrain.TerrainGenerator;
+import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -39,7 +40,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     private final Scheduler scheduler = new Scheduler();
     private final WorldManager manager;
     private final List<Player> viewers = new ArrayList<>();
-    private final Map<Long, Chunk> loadedChunks = new HashMap<>();
+    private final Map<Long, Chunk> loadedChunks = new Long2ObjectArrayMap<>();
     private final String name;
     private final WorldFormat format;
     private final TerrainGenerator generator;
@@ -160,6 +161,14 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         return getChunk(x >> 4, z >> 4).getBlock(x, y, z);
     }
 
+    public byte getBlockId(int x, int y, int z) {
+        return getChunk(x >> 4, z >> 4).getBlockId(x, y, z);
+    }
+
+    public byte getBlockMetadata(int x, int y, int z) {
+        return getChunk(x >> 4, z >> 4).getBlockMetadata(x, y, z);
+    }
+
     public boolean setBlock(int x, int y, int z, Material material) {
         if (!material.block) {
             return false;
@@ -185,7 +194,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     @Nullable
     public TileEntity getTileEntity(int x, int y, int z) {
         Chunk chunk = getChunk(x >> 4, z >> 4);
-        return chunk.getTileEntity(Block.getChunkRelativeX(x), y, Block.getChunkRelativeZ(z));
+        return chunk.getTileEntity(Block.getChunkRelativeCoord(x), y, Block.getChunkRelativeCoord(z));
     }
 
     public boolean isChunkLoaded(int x, int z) {
@@ -256,10 +265,13 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
 
     @Override
     public void removeViewer(Player player) {
+        if (!server.isRunning()) {
+            return;
+        }
         if (viewers.remove(player)) {
             player.removeAllViewers();
             getEntitiesInChunkRange(null, player.getPos(), ENTITY_VIEW_DISTANCE_CHUNKS).forEach(entityInRange -> entityInRange.entity().removeViewer(player));
-            Collection<Chunk> chunks = player.getViewingChunks();
+            Collection<Chunk> chunks = new ArrayList<>(Chunk.getPlayerViewingChunks(player));
             for (Chunk chunk : chunks) {
                 chunk.removeViewer(player);
             }

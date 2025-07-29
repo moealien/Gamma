@@ -5,7 +5,7 @@ import domrbeeson.gamma.item.SmeltableItem;
 
 public class CobblestoneItem extends SmeltableItem {
 
-    public CobblestoneItem(short amount) {
+    public CobblestoneItem(short metadata, int amount) {
         super(Material.COBBLESTONE, amount);
     }
 

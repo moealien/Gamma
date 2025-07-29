@@ -39,8 +39,8 @@ public class FallingBlockHandler implements BlockHandler {
         Chunk chunk = block.chunk();
         int x = block.x();
         int z = block.z();
-        byte relativeX = Block.getChunkRelativeX(x);
-        byte relativeZ = Block.getChunkRelativeZ(z);
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         chunk.directlySetBlock(relativeX, y, relativeZ, (byte) 0, (byte) 0);
         BlockChangePacketOut blockChangePacket = new BlockChangePacketOut(x, y, z, (byte) 0, (byte) 0);
 //        chunk.getViewersInRange(new Pos(x, y, z), Chunk.SEND_BLOCK_UPDATE_RANGE).forEach(viewer -> viewer.player().sendPacket(blockChangePacket));
@@ -60,8 +60,8 @@ public class FallingBlockHandler implements BlockHandler {
     }
 
     private int getLowestAvailableY(Block block) {
-        byte relativeX = Block.getChunkRelativeX(block.x());
-        byte relativeZ = Block.getChunkRelativeZ(block.z());
+        byte relativeX = Block.getChunkRelativeCoord(block.x());
+        byte relativeZ = Block.getChunkRelativeCoord(block.z());
         Chunk chunk = block.chunk();
         int lowestY = block.y();
         for (int y = lowestY - 1; y >= 0; y--) {

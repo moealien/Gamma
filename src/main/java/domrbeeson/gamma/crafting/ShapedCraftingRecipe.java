@@ -35,7 +35,7 @@ public class ShapedCraftingRecipe implements CraftingRecipe {
         int yStart = -1;
         for (int x = 0; x < craftingGrid.length; x++) {
             for (int y = 0; y < craftingGrid[x].length; y++) {
-                if (craftingGrid[x][y].id() == 0) {
+                if (craftingGrid[x][y].getId() == 0) {
                     airSlots++;
                 } else if (xStart == -1) {
                     xStart = x;
@@ -69,10 +69,10 @@ public class ShapedCraftingRecipe implements CraftingRecipe {
 
                 gridItem = craftingGrid[x][y];
                 recipeItem = recipe[recipeX][recipeY];
-                if (recipeItem.getId() != gridItem.id() || (!recipeItem.ignoreMetadata() && recipeItem.getMetadata() != gridItem.metadata()) || (recipeItem.getId() != 0 && recipeItem.getAmount() > gridItem.amount())) {
+                if (recipeItem.getId() != gridItem.getId() || (!recipeItem.ignoreMetadata() && recipeItem.getMetadata() != gridItem.getMetadata()) || (recipeItem.getId() != 0 && recipeItem.getAmount() > gridItem.getAmount())) {
                     return null;
                 }
-                if (gridItem.id() != 0) {
+                if (gridItem.getId() != 0) {
                     matchedSlots++;
                     populatedSlots[x][y] = gridItem;
                 }

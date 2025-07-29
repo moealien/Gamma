@@ -6,7 +6,7 @@ import domrbeeson.gamma.item.Material;
 
 public class MushroomSoupItem extends Item implements FoodItem {
 
-    public MushroomSoupItem(int amount) {
+    public MushroomSoupItem(short metadata, int amount) {
         super(Material.MUSHROOM_SOUP, amount);
     }
 

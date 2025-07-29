@@ -13,7 +13,7 @@ public class WindowCursorItemPacketOut extends PacketOut {
     private final byte amount;
 
     public WindowCursorItemPacketOut(Item item) {
-        this(item.id(), item.metadata(), item.amount());
+        this(item.getId(), item.getMetadata(), item.getAmount());
     }
 
     public WindowCursorItemPacketOut(short itemId, short metadata, byte amount) {

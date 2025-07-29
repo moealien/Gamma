@@ -1,5 +1,8 @@
 package domrbeeson.gamma.block;
 
+import domrbeeson.gamma.MinecraftServer;
+import domrbeeson.gamma.block.handler.BlockHandler;
+import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.world.Chunk;
 import domrbeeson.gamma.world.World;
 
@@ -15,12 +18,16 @@ public record Block(
         byte blockLight
 ) {
 
-    public static byte getChunkRelativeX(int x) {
-        return (byte)(x - ((x >> 4) * Chunk.WIDTH));
+    public Material material() {
+        return Material.get(id, metadata);
     }
 
-    public static byte getChunkRelativeZ(int z) {
-        return (byte)(z - ((z >> 4) * Chunk.WIDTH));
+    public BlockHandler getHandler(MinecraftServer server) {
+        return server.getBlockHandlers().getBlockHandler(id);
+    }
+
+    public static byte getChunkRelativeCoord(int xOrZ) {
+        return (byte)(xOrZ - ((xOrZ >> 4) * Chunk.WIDTH));
     }
 
     @Override

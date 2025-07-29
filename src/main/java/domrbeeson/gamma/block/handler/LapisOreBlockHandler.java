@@ -6,9 +6,11 @@ import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.world.Chunk;
 
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.SplittableRandom;
 
 public class LapisOreBlockHandler extends ToolsDropBlockHandler {
+
+    private final SplittableRandom random = new SplittableRandom();
 
     public LapisOreBlockHandler() {
         super(Material.AIR,
@@ -21,8 +23,7 @@ public class LapisOreBlockHandler extends ToolsDropBlockHandler {
     @Override
     public List<Item> getDrops(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, short toolId) {
         if (canBreakWithTool(toolId)) {
-            byte amount = (byte) ThreadLocalRandom.current().nextInt(4, 9);
-            return List.of(Material.LAPIS_LAZULI.getItem(amount));
+            return List.of(Material.LAPIS_LAZULI.getItem((byte) random.nextInt(4, 9)));
         }
         return List.of();
     }
