@@ -239,6 +239,9 @@ public class Chunk implements Tickable, Viewable {
         if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {
             return;
         }
+        if (blocks[relativeX][y][relativeZ] == id && this.metadata[relativeX][y][relativeZ] == metadata) {
+            return;
+        }
         Map<Long, BlockChangeEvent> blocks = scheduledBlockChanges.computeIfAbsent(server.getTick() + 1, t -> new HashMap<>());
         blocks.put(Chunk.packChunkBlockCoords(x, y, z), new BlockChangeEvent(this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), id, metadata, update));
     }
