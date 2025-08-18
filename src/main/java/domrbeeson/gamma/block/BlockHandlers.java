@@ -34,6 +34,7 @@ public final class BlockHandlers {
         );
         InstantBreakBlockHandler instantBreakHandler = new InstantBreakBlockHandler();
         FarmlandBlockHandler farmlandBlockHandler = new FarmlandBlockHandler();
+        FlowerBlockHandler flowerBlockHandler = new FlowerBlockHandler();
 
         register(Material.AIR, new AirBlockHandler());
         register(Material.STONE, new ToolsDropBlockHandler(Material.COBBLESTONE, Material.WOOD_PICKAXE.id, Material.STONE_PICKAXE.id, Material.IRON_PICKAXE.id, Material.GOLD_PICKAXE.id, Material.DIAMOND_PICKAXE.id));
@@ -76,8 +77,8 @@ public final class BlockHandlers {
         register(Material.DEFAULT_FERN, attachedBlockHandler);
         register(Material.BROWN_MUSHROOM, mushroomBlockHandler);
         register(Material.RED_MUSHROOM, mushroomBlockHandler);
-        register(Material.DANDELION, instantBreakHandler);
-        register(Material.ROSE, instantBreakHandler);
+        register(Material.DANDELION, flowerBlockHandler);
+        register(Material.ROSE, flowerBlockHandler);
 
         SignBlockHandler signBlockHandler = new SignBlockHandler();
         register(Material.SIGN_POST, signBlockHandler);
