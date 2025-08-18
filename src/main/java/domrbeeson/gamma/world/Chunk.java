@@ -666,6 +666,12 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public void scheduleBlockUpdate(int x, int y, int z, long ticksInFuture) {
+        if (y < 0) {
+            return;
+        }
+        if (y >= HEIGHT) {
+            return;
+        }
         long futureTick = world.getTime() + ticksInFuture;
         Map<Long, Block> scheduled = scheduledBlockUpdates.getOrDefault(futureTick, new HashMap<>());
         scheduled.put(packChunkBlockCoords(x, y, z), getBlock(x, y, z));
