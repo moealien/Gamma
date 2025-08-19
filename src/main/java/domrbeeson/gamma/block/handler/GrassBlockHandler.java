@@ -25,7 +25,7 @@ public class GrassBlockHandler extends FarmlandBlockHandler {
     public void randomTick(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, long tick) {
         // TODO https://minecraft.wiki/w/Grass_Block#Post-generation
 
-        if (!server.getBlockHandlers().getBlockHandler(chunk.getBlockId(x, y + 1, z)).isTransparent()) {
+        if (server.getBlockHandlers().getBlockHandler(chunk.getBlockId(x, y + 1, z)).isSolid()) {
             chunk.setBlock(x, y, z, Material.DIRT);
             return;
         }
@@ -47,7 +47,7 @@ public class GrassBlockHandler extends FarmlandBlockHandler {
             if (blockAbove.blockLight() < 9) {
                 continue;
             }
-            if (!server.getBlockHandlers().getBlockHandler(blockAbove.id()).isTransparent()) {
+            if (server.getBlockHandlers().getBlockHandler(blockAbove.id()).isSolid()) {
                 continue;
             }
 
