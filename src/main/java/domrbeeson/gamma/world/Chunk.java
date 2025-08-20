@@ -125,20 +125,23 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public byte getBlockId(byte x, int y, byte z) {
-        if (y >= HEIGHT) {
+        if (y >= HEIGHT || y < 0) {
             return Material.AIR.blockId;
         }
         return blocks[x][y][z];
     }
 
     public byte getBlockMetadata(int x, int y, int z) {
+        if (y >= HEIGHT || y < 0) {
+            return 0;
+        }
         byte relativeX = Block.getChunkRelativeCoord(x);
         byte relativeZ = Block.getChunkRelativeCoord(z);
         return metadata[relativeX][y][relativeZ];
     }
 
     public byte getBlockMetadata(byte x, int y, byte z) {
-        if (y >= HEIGHT) {
+        if (y >= HEIGHT || y < 0) {
             return 0;
         }
         return metadata[x][y][z];
