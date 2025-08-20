@@ -16,7 +16,6 @@ public final class BlockHandlers {
         }
     }
     private static final EmptyBlockHandler EMPTY_BLOCK_HANDLER = new EmptyBlockHandler();
-    private static final SelfDropBlockHandler DEFAULT_BLOCK_HANDLER = new SelfDropBlockHandler();
 
     private final BlockHandler[] handlers = new BlockHandler[96];
 
@@ -32,16 +31,16 @@ public final class BlockHandlers {
                 put(Dimension.NETHER, (byte) 1);
             }}
         );
-        InstantBreakBlockHandler instantBreakHandler = new InstantBreakBlockHandler();
         FarmlandBlockHandler farmlandBlockHandler = new FarmlandBlockHandler();
         FlowerBlockHandler flowerBlockHandler = new FlowerBlockHandler();
+        SelfDropBlockHandler selfDropBlockHandler = new SelfDropBlockHandler();
 
         register(Material.AIR, new AirBlockHandler());
         register(Material.STONE, new ToolsDropBlockHandler(Material.COBBLESTONE, Material.WOOD_PICKAXE.id, Material.STONE_PICKAXE.id, Material.IRON_PICKAXE.id, Material.GOLD_PICKAXE.id, Material.DIAMOND_PICKAXE.id));
         register(Material.GRASS, new GrassBlockHandler());
         register(Material.DIRT, farmlandBlockHandler);
         register(Material.COBBLESTONE, new ToolsDropBlockHandler(Material.COBBLESTONE, Material.WOOD_PICKAXE.id, Material.STONE_PICKAXE.id, Material.IRON_PICKAXE.id, Material.GOLD_PICKAXE.id, Material.DIAMOND_PICKAXE.id));
-        register(Material.OAK_PLANKS, DEFAULT_BLOCK_HANDLER);
+        register(Material.OAK_PLANKS, selfDropBlockHandler);
         register(Material.OAK_SAPLING, new SaplingBlockHandler());
         register(Material.WATER_FLOWING, waterBlockHandler);
         register(Material.WATER_SOURCE, waterBlockHandler);
@@ -52,7 +51,7 @@ public final class BlockHandlers {
         register(Material.GOLD_ORE, new ToolsDropBlockHandler(Material.GOLD_ORE, Material.IRON_PICKAXE.id, Material.DIAMOND_PICKAXE.id, Material.GOLD_PICKAXE.id));
         register(Material.IRON_ORE, new ToolsDropBlockHandler(Material.IRON_ORE, Material.STONE_PICKAXE.id, Material.IRON_PICKAXE.id, Material.DIAMOND_PICKAXE.id));
         register(Material.COAL_ORE, new ToolsDropBlockHandler(Material.COAL, Material.WOOD_PICKAXE.id, Material.STONE_PICKAXE.id, Material.IRON_PICKAXE.id, Material.DIAMOND_PICKAXE.id, Material.GOLD_PICKAXE.id));
-        register(Material.OAK_LOG, DEFAULT_BLOCK_HANDLER);
+        register(Material.OAK_LOG, selfDropBlockHandler);
         register(Material.OAK_LEAVES, new LeafBlockHandler());
         register(Material.SPONGE, new SelfDropBlockHandler());
         register(Material.LAPIS_ORE, new LapisOreBlockHandler());
@@ -84,9 +83,16 @@ public final class BlockHandlers {
         register(Material.SIGN_POST, signBlockHandler);
         register(Material.WALL_SIGN, signBlockHandler);
 
-        register(Material.PUMPKIN, DEFAULT_BLOCK_HANDLER);
+        register(Material.PUMPKIN, selfDropBlockHandler);
 
         register(Material.SNOW_LAYER, new SnowLayerBlockHandler());
+
+        for (int i = 0; i < handlers.length; i++) {
+            if (handlers[i] != null) {
+                continue;
+            }
+            handlers[i] = EMPTY_BLOCK_HANDLER;
+        }
     }
 
     public void register(Material material, BlockHandler handler) {
@@ -99,9 +105,6 @@ public final class BlockHandlers {
 
     public BlockHandler getBlockHandler(byte id) {
         if (id >= handlers.length || id < 0) {
-            return EMPTY_BLOCK_HANDLER;
-        }
-        if (handlers[id] == null) {
             return EMPTY_BLOCK_HANDLER;
         }
         return handlers[id];

@@ -553,13 +553,13 @@ public class Chunk implements Tickable, Viewable {
                 byte y = event.getY();
                 int z = event.getZ();
                 byte id = getBlockId(x, y, z);
-                System.out.println("right click, block handler: " + blockHandlers.getBlockHandler(id).getClass().getSimpleName());
                 blockHandlers.getBlockHandler(id).onRightClick(server, getBlock(x, y, z), event.getPlayer());
             });
             scheduledBlockRightClicks.remove(ticks);
         }
 
         for (int i = 0; i < entities.size(); i++) {
+            // TODO this is ugly
             if (i >= entities.size()) { // Prevents concurrent modification exception
                 break;
             }
