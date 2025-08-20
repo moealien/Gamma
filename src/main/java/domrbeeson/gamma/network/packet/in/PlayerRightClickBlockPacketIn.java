@@ -50,7 +50,7 @@ public class PlayerRightClickBlockPacketIn extends WorldPacketIn {
         }
 
         Item heldItem = player.getInventory().getHeldItem();
-        if (heldItem.getMaterial().block) {
+        if (heldItem.getMaterial() != Material.AIR && heldItem.getMaterial().block) {
             int finalX = clickedX;
             byte finalY = clickedY;
             int finalZ = clickedZ;
