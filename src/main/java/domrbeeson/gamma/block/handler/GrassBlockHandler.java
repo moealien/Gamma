@@ -14,7 +14,7 @@ public class GrassBlockHandler extends FarmlandBlockHandler {
 
     private static final List<Item> DROPS = List.of(Material.DIRT.getItem());
 
-    private final SplittableRandom random = new SplittableRandom();
+    private final SplittableRandom random = new SplittableRandom(); // TODO this won't work in a multithreaded environment, so need to pass the random through to randomTick from the chunk shard
 
     @Override
     public List<Item> getDrops(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, short toolId) {
