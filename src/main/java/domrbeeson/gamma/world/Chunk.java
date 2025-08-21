@@ -249,7 +249,7 @@ public class Chunk implements Tickable, Viewable {
         blocks.put(Chunk.packChunkBlockCoords(x, y, z), new BlockChangeEvent(this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), id, metadata, update));
     }
 
-    /*
+    /**
         directlySetBlock does not remove tile entities from a world and bypasses chunk ticking - use with caution
      */
     public void directlySetBlock(byte relativeX, int y, byte relativeZ, byte id, byte metadata) {
@@ -311,13 +311,6 @@ public class Chunk implements Tickable, Viewable {
         Map<Long, PlayerRightClickBlockEvent> events = scheduledBlockRightClicks.computeIfAbsent(server.getTick() + 1, t -> new HashMap<>());
         events.put(packChunkBlockCoords(relativeX, y, relativeZ), new PlayerRightClickBlockEvent(player, x, y, z, player.getInventory().getHeldItem()));
     }
-
-//    public void scheduleBlockChange(BlockChangeEvent event, long ticksInFuture) {
-//        long futureTick = world.getTime() + ticksInFuture;
-//        Map<Long, BlockChangeEvent> scheduled = scheduledBlockChanges.getOrDefault(futureTick, new HashMap<>());
-//        scheduled.put(packChunkBlockCoords(event.getX(), event.getY(), event.getZ()), event);
-//        scheduledBlockChanges.put(futureTick, scheduled);
-//    }
 
     public static long packChunkBlockCoords(int x, int y, int z) {
         return packChunkBlockCoords(Block.getChunkRelativeCoord(x), y, Block.getChunkRelativeCoord(z));
