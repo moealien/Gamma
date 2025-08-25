@@ -12,42 +12,42 @@ public enum Material {
     // TODO max stacks
 
     AIR(0),
-    STONE(1),
-    GRASS(2),
-    DIRT(3),
-    COBBLESTONE(builder(4).itemCreator(CobblestoneItem::new)),
-    OAK_PLANKS(5),
+    STONE(builder(1).opaque()),
+    GRASS(builder(2).opaque()),
+    DIRT(builder(3).opaque()),
+    COBBLESTONE(builder(4).itemCreator(CobblestoneItem::new).opaque()),
+    OAK_PLANKS(builder(5).opaque()),
     OAK_SAPLING(6),
     SPRUCE_SAPLING(builder(6).metadata(1)),
     BIRCH_SAPLING(builder(6).metadata(2)),
-    BEDROCK(7),
-    WATER_FLOWING(builder(8)),
-    WATER_SOURCE(builder(9)),
-    LAVA_FLOWING(builder(10)),
-    LAVA_SOURCE(builder(11)),
-    SAND(12),
-    GRAVEL(13),
-    GOLD_ORE(14),
-    IRON_ORE(15),
-    COAL_ORE(16),
-    OAK_LOG(17),
-    SPRUCE_LOG(builder(17).metadata(1)),
-    BIRCH_LOG(builder(17).metadata(2)),
-    OAK_LEAVES(18),
-    SPRUCE_LEAVES(builder(18).metadata(1)),
-    BIRCH_LEAVES(builder(18).metadata(2)),
-    SPONGE(19),
-    GLASS(20),
-    LAPIS_ORE(21),
-    LAPIS_BLOCK(22),
-    DISPENSER(23),
-    SANDSTONE(24),
-    NOTE_BLOCK(25),
+    BEDROCK(builder(7).opaque()),
+    WATER_FLOWING(builder(8).blockOpacity(3)),
+    WATER_SOURCE(builder(9).blockOpacity(3)),
+    LAVA_FLOWING(builder(10).opaque()),
+    LAVA_SOURCE(builder(11).opaque()),
+    SAND(builder(12).opaque()),
+    GRAVEL(builder(13).opaque()),
+    GOLD_ORE(builder(14).opaque()),
+    IRON_ORE(builder(15).opaque()),
+    COAL_ORE(builder(16).opaque()),
+    OAK_LOG(builder(17).opaque()),
+    SPRUCE_LOG(builder(17).metadata(1).opaque()),
+    BIRCH_LOG(builder(17).metadata(2).opaque()),
+    OAK_LEAVES(builder(18).blockOpacity(1)),
+    SPRUCE_LEAVES(builder(18).metadata(1).blockOpacity(1)),
+    BIRCH_LEAVES(builder(18).metadata(2).blockOpacity(1)),
+    SPONGE(builder(19).opaque()),
+    GLASS(builder(20).opaque()),
+    LAPIS_ORE(builder(21).opaque()),
+    LAPIS_BLOCK(builder(22).opaque()),
+    DISPENSER(builder(23).opaque()),
+    SANDSTONE(builder(24).opaque()),
+    NOTE_BLOCK(builder(25).opaque()),
     // BED_BOTTOM
-    POWERED_RAIL(27),
+    POWERED_RAIL(27), // TODO blockOpacity values from here down
     DETECTOR_RAIL(28),
     STICKY_PISTON(29),
-    COBWEB(30),
+    COBWEB(builder(30).blockOpacity(1)),
     DEFAULT_FERN(31),
     SHORT_GRASS(builder(31).metadata(1)),
     FERN(builder(31).metadata(2)),
@@ -127,7 +127,7 @@ public enum Material {
     REDSTONE_TORCH(76),
     STONE_BUTTON(77),
     SNOW_LAYER(78),
-    ICE(79),
+    ICE(builder(79).blockOpacity(3)),
     SNOW_BLOCK(80),
     CACTUS(81),
     CLAY_BLOCK(82),
@@ -278,6 +278,7 @@ public enum Material {
     public final boolean block;
     public final short maxStack;
     public final byte blockId;
+    public final byte blockOpacity;
     public final CraftingRecipe[] recipes;
     private final ItemCreator itemCreator;
 
@@ -286,14 +287,14 @@ public enum Material {
     }
 
     Material(Builder builder) {
-        this(builder.id, builder.metadataMin, builder.metadataMax, builder.maxStack, builder.blockId, builder.recipes.toArray(new CraftingRecipe[0]), builder.itemCreator);
+        this(builder.id, builder.metadataMin, builder.metadataMax, builder.maxStack, builder.blockId, builder.blockOpacity, builder.recipes.toArray(new CraftingRecipe[0]), builder.itemCreator);
     }
 
     Material(short id, short metadata, byte maxStack, byte blockId, CraftingRecipe[] recipe, ItemCreator itemCreator) {
-        this(id, metadata, metadata, maxStack, blockId, recipe, itemCreator);
+        this(id, metadata, metadata, maxStack, blockId, (byte) 0, recipe, itemCreator);
     }
 
-    Material(short id, short metadataMin, short metadataMax, byte maxStack, byte blockId, CraftingRecipe[] recipes, ItemCreator itemCreator) {
+    Material(short id, short metadataMin, short metadataMax, byte maxStack, byte blockId, byte blockOpacity, CraftingRecipe[] recipes, ItemCreator itemCreator) {
         this.id = id;
         this.metadata = metadataMin;
         this.metadataMin = metadataMin;
@@ -304,8 +305,10 @@ public enum Material {
         block = id <= Byte.MAX_VALUE;
         if (block) {
             this.blockId = (byte) id;
+            this.blockOpacity = blockOpacity;
         } else {
             this.blockId = blockId;
+            this.blockOpacity = 0;
         }
 
         this.itemCreator = Objects.requireNonNullElseGet(itemCreator, () -> (metadata, amount) -> {
@@ -360,6 +363,7 @@ public enum Material {
         private short metadataMax = 0;
         private byte maxStack = 64;
         private byte blockId = 0;
+        private byte blockOpacity = 0;
         private ItemCreator itemCreator = null;
 
         public Builder(int id) {
@@ -379,6 +383,16 @@ public enum Material {
 
         public Builder blockId(int blockId) {
             this.blockId = (byte) blockId;
+            return this;
+        }
+
+        public Builder blockOpacity(int blockOpacity) {
+            this.blockOpacity = (byte) blockOpacity;
+            return this;
+        }
+
+        public Builder opaque() {
+            this.blockOpacity = (byte) 255;
             return this;
         }
 
