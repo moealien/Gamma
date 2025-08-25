@@ -5,7 +5,6 @@ import domrbeeson.gamma.block.Block;
 import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.world.Chunk;
-import domrbeeson.gamma.world.World;
 
 import java.util.List;
 import java.util.SplittableRandom;
@@ -23,35 +22,23 @@ public class GrassBlockHandler extends FarmlandBlockHandler {
 
     @Override
     public void randomTick(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, long tick) {
-        // TODO https://minecraft.wiki/w/Grass_Block#Post-generation
-
-        if (server.getBlockHandlers().getBlockHandler(chunk.getBlockId(x, y + 1, z)).isSolid()) {
+        Block blockAbove = chunk.getBlock(x, y + 1, z);
+        if (blockAbove.blockLight() < 4 && blockAbove.material().blockOpacity > 2) {
+            if (random.nextInt(4) != 0) {
+                return;
+            }
             chunk.setBlock(x, y, z, Material.DIRT);
-            return;
-        }
+        } else if (blockAbove.blockLight() >= 9) {
+            x += random.nextInt(3) - 1;
+            y += random.nextInt(5) - 3;
+            z += random.nextInt(3) - 1;
 
-        World world = chunk.getWorld();
-        for (int i = 0; i < 4; i++) {
-            int checkX = random.nextInt(3);
-            int checkY = random.nextInt(5);
-            int checkZ = random.nextInt(3);
-
-            chunk = world.getLoadedChunk(Block.getChunkRelativeCoord(x + checkX), Block.getChunkRelativeCoord(z + checkZ));
-            if (chunk == null) {
-                continue;
+            if (chunk.getBlockId(x, y, z) == Material.DIRT.blockId) {
+                blockAbove = chunk.getBlock(x, y + 1, z);
+                if (blockAbove.blockLight() >= 4 && blockAbove.material().blockOpacity <= 2) {
+                    chunk.setBlock(x, y, z, Material.GRASS);
+                }
             }
-            if (chunk.getBlockId(checkX, checkY, checkZ) != Material.DIRT.blockId) {
-                continue;
-            }
-            Block blockAbove = chunk.getBlock(checkX, checkY + 1, checkZ);
-            if (blockAbove.blockLight() < 9) {
-                continue;
-            }
-            if (server.getBlockHandlers().getBlockHandler(blockAbove.id()).isSolid()) {
-                continue;
-            }
-
-            chunk.setBlock(checkX, checkY, checkZ, Material.GRASS);
         }
     }
 
