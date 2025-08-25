@@ -148,22 +148,36 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public byte getBlockLight(int x, int y, int z) {
+        if (y < 0 || y >= HEIGHT) {
+            return 0;
+        }
         byte relativeX = Block.getChunkRelativeCoord(x);
         byte relativeZ = Block.getChunkRelativeCoord(z);
-        return (byte)(blockAndSkyLight[relativeX][y][relativeZ] >> 4);
+        // TODO get actual block light
+//        return (byte)(blockAndSkyLight[relativeX][y][relativeZ] >> 4);
+        return 15;
     }
 
     public byte getBlockLight(byte x, int y, byte z) {
+        if (y < 0 || y >= HEIGHT) {
+            return 0;
+        }
         return (byte)(blockAndSkyLight[x][y][z] >> 4);
     }
 
     public byte getSkyLight(int x, int y, int z) {
+        if (y < 0 || y >= HEIGHT) {
+            return 0;
+        }
         byte relativeX = Block.getChunkRelativeCoord(x);
         byte relativeZ = Block.getChunkRelativeCoord(z);
         return (byte)(blockAndSkyLight[relativeX][y][relativeZ] & 15);
     }
 
     public byte getSkyLight(byte x, int y, byte z) {
+        if (y < 0 || y >= HEIGHT) {
+            return 0;
+        }
         return (byte)(blockAndSkyLight[x][y][z] & 15);
     }
 
