@@ -110,4 +110,8 @@ public final class BlockHandlers {
         return handlers[id];
     }
 
+    public BlockHandler getBlockHandler(Material material) {
+        return getBlockHandler(material.blockId);
+    }
+
 }
