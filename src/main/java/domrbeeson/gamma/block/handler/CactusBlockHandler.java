@@ -57,8 +57,7 @@ public class CactusBlockHandler extends PlantStackBlockHandler {
     }
 
     private boolean shouldBreak(Chunk chunk, int x, int y, int z) {
-        byte blockId = chunk.getBlockId(x, y, z);
-        return blockId != Material.AIR.blockId;
+        return chunk.getBlockId(x, y, z) != Material.AIR.blockId;
     }
 
 }

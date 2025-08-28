@@ -14,9 +14,9 @@ public class PlayerDiggingPacketIn extends WorldPacketIn {
 
     private static final double BLOCK_BREAK_RANGE = 4;
 
-    private Status status;
-    private int x, y, z;
-    private byte face;
+    private final Status status;
+    private final int x, y, z;
+    private final byte face;
 
     public PlayerDiggingPacketIn(MinecraftServer server, PlayerConnection connection, DataInputStream stream) throws IOException {
         super(Packet.PLAYER_DIGGING, server, connection, stream);
@@ -52,8 +52,8 @@ public class PlayerDiggingPacketIn extends WorldPacketIn {
             return;
         }
 
-        Block block = chunk.getBlock(x, y, z);
-        if (block.id() == 0) {
+        Block block = player.getWorld().getBlock(x, y, z);
+        if (block == null || block.id() == 0) {
             return;
         }
 

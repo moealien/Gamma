@@ -46,7 +46,7 @@ public class Chunk implements Tickable, Viewable {
     private final PreChunkPacketOut preChunkPacketLoad, preChunkPacketUnload;
     private final World world;
     private final int chunkX, chunkZ;
-    private final byte[][][] blocks, metadata, blockAndSkyLight;
+    private final byte[][][] blocks, metadata, skyLight, blockLight;
     private final List<Player> viewers = new ArrayList<>();
     private final long chunkIndex;
     private final List<Entity<?>> entities;
@@ -77,7 +77,8 @@ public class Chunk implements Tickable, Viewable {
         this.timeSinceZeroPlayers = world.getTime();
         this.blocks = builder.blocks;
         this.metadata = builder.metadata;
-        this.blockAndSkyLight = builder.blockAndSkyLight;
+        this.skyLight = builder.skyLight;
+        this.blockLight = builder.blockLight;
         this.entities = builder.entities;
         this.tileEntities = builder.tileEntities;
         this.signTileEntities = builder.signTileEntities;
@@ -108,31 +109,17 @@ public class Chunk implements Tickable, Viewable {
         return chunkIndex;
     }
 
-    private void setBlock(byte x, int y, byte z, byte id) {
-        blocks[x][y][z] = id;
-    }
-
-    private void setMetadata(byte x, int y, byte z, byte metadata) {
-        this.metadata[x][y][z] = metadata;
-    }
-
-    private void setLight(byte x, int y, byte z, byte blockLight, byte skyLight) {
-        blockAndSkyLight[x][y][z] = (byte)(blockLight << 4 | skyLight & 15);
-    }
-
     public byte getBlockId(int x, int y, int z) {
-        return getBlockId(Block.getChunkRelativeCoord(x), y, Block.getChunkRelativeCoord(z));
-    }
-
-    public byte getBlockId(byte x, int y, byte z) {
-        if (y >= HEIGHT || y < 0) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return Material.AIR.blockId;
         }
-        return blocks[x][y][z];
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
+        return blocks[relativeX][y][relativeZ];
     }
 
     public byte getBlockMetadata(int x, int y, int z) {
-        if (y >= HEIGHT || y < 0) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return 0;
         }
         byte relativeX = Block.getChunkRelativeCoord(x);
@@ -140,61 +127,38 @@ public class Chunk implements Tickable, Viewable {
         return metadata[relativeX][y][relativeZ];
     }
 
-    public byte getBlockMetadata(byte x, int y, byte z) {
-        if (y >= HEIGHT || y < 0) {
-            return 0;
-        }
-        return metadata[x][y][z];
-    }
-
     public byte getBlockLight(int x, int y, int z) {
-        if (y < 0 || y >= HEIGHT) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return 0;
         }
         byte relativeX = Block.getChunkRelativeCoord(x);
         byte relativeZ = Block.getChunkRelativeCoord(z);
-        // TODO get actual block light
-//        return (byte)(blockAndSkyLight[relativeX][y][relativeZ] >> 4);
-        return 15;
-    }
-
-    public byte getBlockLight(byte x, int y, byte z) {
-        if (y < 0 || y >= HEIGHT) {
-            return 0;
-        }
-        return (byte)(blockAndSkyLight[x][y][z] >> 4);
+        return blockLight[relativeX][y][relativeZ];
     }
 
     public byte getSkyLight(int x, int y, int z) {
-        if (y < 0 || y >= HEIGHT) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return 0;
         }
         byte relativeX = Block.getChunkRelativeCoord(x);
         byte relativeZ = Block.getChunkRelativeCoord(z);
-        return (byte)(blockAndSkyLight[relativeX][y][relativeZ] & 15);
-    }
-
-    public byte getSkyLight(byte x, int y, byte z) {
-        if (y < 0 || y >= HEIGHT) {
-            return 0;
-        }
-        return (byte)(blockAndSkyLight[x][y][z] & 15);
+        return skyLight[relativeX][y][relativeZ];
     }
 
     public Block getBlock(int x, int y, int z) {
-        byte relativeX = Block.getChunkRelativeCoord(x);
-        byte relativeZ = Block.getChunkRelativeCoord(z);
-        // TODO if Y is above build limit, return air
+        if (!areCoordsInThisChunk(x, y, z)) {
+            return world.getBlock(x, y, z);
+        }
         return new Block(
                 world,
                 this,
                 x,
                 y,
                 z,
-                getBlockId(relativeX, y, relativeZ),
-                getBlockMetadata(relativeX, y, relativeZ),
-                getBlockLight(relativeX, y, relativeZ),
-                getSkyLight(relativeX, y, relativeZ)
+                getBlockId(x, y, z),
+                getBlockMetadata(x, y, z),
+                getBlockLight(x, y, z),
+                getSkyLight(x, y, z)
         );
     }
 
@@ -211,38 +175,40 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public Material getMaterial(int x, int y, int z) {
+        if (!areCoordsInThisChunk(x, y, z)) {
+            return Material.AIR;
+        }
         byte relativeX = Block.getChunkRelativeCoord(x);
         byte relativeZ = Block.getChunkRelativeCoord(z);
-        return getMaterial(relativeX, (byte) y, relativeZ);
+        return Material.get(blocks[relativeX][y][relativeZ], metadata[relativeX][y][relativeZ]);
     }
 
-    public Material getMaterial(byte x, byte y, byte z) {
-        return Material.get(blocks[x][y][z], metadata[x][y][z]);
-    }
-
-    public void setBlock(int x, int y, int z, byte id) {
-        setBlock(x, y, z, id, (byte) 0);
-    }
-
-    public void setBlock(int x, int y, int z, Material material) {
-        if (!material.block) {
-            return;
-        }
-        setBlock(x, y, z, material.blockId, (byte) material.metadataMin, true);
-    }
-
-    public void setBlock(int x, int y, int z, byte id, byte metadata) {
-        setBlock(x, y, z, id, metadata, true);
-    }
-
-    private boolean areCoordsInThisChunk(int relativeX, int y, int relativeZ) {
-        if (y < 0) {
+    public boolean areCoordsInThisChunk(int x, int y, int z) {
+        if (y < 0 || y >= HEIGHT) {
             return false;
         }
-        return relativeX < WIDTH
-                && relativeX >= 0
-                && relativeZ < WIDTH
-                && relativeZ >= 0;
+
+        int xMin = chunkX * WIDTH;
+        if (x < xMin) {
+            return false;
+        }
+
+        int xMax = xMin + WIDTH;
+        if (x >= xMax) {
+            return false;
+        }
+
+        int zMin = chunkZ * WIDTH;
+        if (z < zMin) {
+            return false;
+        }
+
+        int zMax = zMin + WIDTH;
+        if (z >= zMax) {
+            return false;
+        }
+
+        return true;
     }
 
     private void setChanged() {
@@ -250,30 +216,51 @@ public class Chunk implements Tickable, Viewable {
         world.markChunkForSaving(this);
     }
 
-    public void setBlock(int x, int y, int z, byte id, byte metadata, boolean update) {
-        byte relativeX = Block.getChunkRelativeCoord(x);
-        byte relativeZ = Block.getChunkRelativeCoord(z);
-        if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {
+    public void setBlock(int x, int y, int z, Material material) {
+        if (!material.block) {
             return;
         }
+        setBlock(x, y, z, material.blockId, (byte) material.metadata);
+    }
+
+    public void setBlock(int x, int y, int z, byte id) {
+        setBlock(x, y, z, id, (byte) 0);
+    }
+
+    public void setBlock(int x, int y, int z, byte id, byte metadata) {
+        setBlock(x, y, z, id, metadata, true);
+    }
+
+    public void setBlock(int x, int y, int z, byte id, byte metadata, boolean update) {
+        if (!areCoordsInThisChunk(x, y, z)) {
+            return;
+        }
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
         if (blocks[relativeX][y][relativeZ] == id && this.metadata[relativeX][y][relativeZ] == metadata) {
             return;
         }
         Map<Long, BlockChangeEvent> blocks = scheduledBlockChanges.computeIfAbsent(server.getTick() + 1, t -> new HashMap<>());
-        blocks.put(Chunk.packChunkBlockCoords(x, y, z), new BlockChangeEvent(this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), id, metadata, update));
+        blocks.put(Chunk.packChunkBlockCoords(x, y, z), new BlockChangeEvent(this, x, y, z, getBlockId(x, y, z), getBlockMetadata(x, y, z), id, metadata, update));
     }
 
     /**
         directlySetBlock does not remove tile entities from a world and bypasses chunk ticking - use with caution
      */
-    public void directlySetBlock(byte relativeX, int y, byte relativeZ, byte id, byte metadata) {
-        directlySetBlock(relativeX, y, relativeZ, id, metadata, getSkyLight(relativeX, y, relativeZ), getBlockLight(relativeX, y, relativeZ));
+    public void directlySetBlock(int x, int y, int z, byte id, byte metadata) {
+        directlySetBlock(x, y, z, id, metadata, getSkyLight(x, y, z), getBlockLight(x, y, z));
     }
 
-    public void directlySetBlock(byte relativeX, int y, byte relativeZ, byte id, byte metadata, byte skyLight, byte blockLight) {
-        setBlock(relativeX, y, relativeZ, id);
-        setMetadata(relativeX, y, relativeZ, metadata);
-        setLight(relativeX, y, relativeZ, blockLight, skyLight);
+    public void directlySetBlock(int x, int y, int z, byte id, byte metadata, byte skyLight, byte blockLight) {
+        if (!areCoordsInThisChunk(x, y, z)) {
+            return;
+        }
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
+        this.blocks[relativeX][y][relativeZ] = id;
+        this.metadata[relativeX][y][relativeZ] = metadata;
+        this.skyLight[relativeX][y][relativeZ] = skyLight;
+        this.blockLight[relativeX][y][relativeZ] = blockLight;
         setChanged();
     }
 
@@ -282,52 +269,46 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public void breakBlockAsPlayer(Player player, int x, int y, int z, boolean reduceToolDurability) {
-        byte relativeX = Block.getChunkRelativeCoord(x);
-        byte relativeZ = Block.getChunkRelativeCoord(z);
-        if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return;
         }
         Map<Long, BlockChangeEvent> blocks = scheduledBlockChanges.computeIfAbsent(server.getTick() + 1, t -> new HashMap<>());
-        blocks.put(Chunk.packChunkBlockCoords(x, y, z), new PlayerBlockBreakEvent(server, player, this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), true, player.getInventory().getHeldItem().getId(), reduceToolDurability));
+        blocks.put(Chunk.packChunkBlockCoords(x, y, z), new PlayerBlockBreakEvent(server, player, this, x, y, z, getBlockId(x, y, z), getBlockMetadata(x, y, z), true, player.getInventory().getHeldItem().getId(), reduceToolDurability));
     }
 
     public void breakBlock(int x, int y, int z) {
-        byte relativeX = Block.getChunkRelativeCoord(x);
-        byte relativeZ = Block.getChunkRelativeCoord(z);
-        if (!areCoordsInThisChunk(relativeX, (byte) y, relativeZ)) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return;
         }
         Map<Long, BlockChangeEvent> blocks = scheduledBlockChanges.computeIfAbsent(server.getTick() + 1, t -> new HashMap<>());
-        blocks.put(Chunk.packChunkBlockCoords(relativeX, y, relativeZ), new BlockBreakEvent(server, this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), true));
+        blocks.put(Chunk.packChunkBlockCoords(x, y, z), new BlockBreakEvent(server, this, x, y, z, getBlockId(x, y, z), getBlockMetadata(x, y, z), true));
     }
 
-    public boolean placeBlockAsPlayer(Player player, int x, byte y, int z, byte id, byte metadata, int clickedX, byte clickedY, int clickedZ) {
+    public boolean placeBlockAsPlayer(Player player, int x, int y, int z, byte id, byte metadata, int clickedX, byte clickedY, int clickedZ) {
         // TODO need the direction for things like sign posts and wall signs
-        byte relativeX = Block.getChunkRelativeCoord(x);
-        byte relativeZ = Block.getChunkRelativeCoord(z);
-        if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return false;
         }
         if (!server.getBlockHandlers().getBlockHandler(id).canPlace(this, x, y, z)) {
             return false;
         }
         Map<Long, BlockChangeEvent> blocks = scheduledBlockChanges.computeIfAbsent(server.getTick() + 1, t -> new HashMap<>());
-        blocks.put(packChunkBlockCoords(relativeX, y, relativeZ), new PlayerBlockPlaceEvent(player, this, x, y, z, getBlockId(relativeX, y, relativeZ), getBlockMetadata(relativeX, y, relativeZ), id, metadata, clickedX, clickedY, clickedZ, true));
+        blocks.put(packChunkBlockCoords(x, y, z), new PlayerBlockPlaceEvent(player, this, x, y, z, getBlockId(x, y, z), getBlockMetadata(x, y, z), id, metadata, clickedX, clickedY, clickedZ, true));
         return true;
     }
 
-    public void rightClickAsPlayer(Player player, int x, byte y, int z) {
-        byte relativeX = Block.getChunkRelativeCoord(x);
-        byte relativeZ = Block.getChunkRelativeCoord(z);
-        if (!areCoordsInThisChunk(relativeX, y, relativeZ)) {
+    public void rightClickAsPlayer(Player player, int x, int y, int z) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return;
         }
         Map<Long, PlayerRightClickBlockEvent> events = scheduledBlockRightClicks.computeIfAbsent(server.getTick() + 1, t -> new HashMap<>());
-        events.put(packChunkBlockCoords(relativeX, y, relativeZ), new PlayerRightClickBlockEvent(player, x, y, z, player.getInventory().getHeldItem()));
+        events.put(packChunkBlockCoords(x, y, z), new PlayerRightClickBlockEvent(player, x, y, z, player.getInventory().getHeldItem()));
     }
 
     public static long packChunkBlockCoords(int x, int y, int z) {
-        return packChunkBlockCoords(Block.getChunkRelativeCoord(x), y, Block.getChunkRelativeCoord(z));
+        byte relativeX = Block.getChunkRelativeCoord(x);
+        byte relativeZ = Block.getChunkRelativeCoord(z);
+        return packChunkBlockCoords(relativeX, y, relativeZ);
     }
 
     public static long packChunkBlockCoords(byte x, int y, byte z) {
@@ -404,8 +385,8 @@ public class Chunk implements Tickable, Viewable {
     }
 
     @Nullable
-    public TileEntity getTileEntity(byte x, int y, byte z) {
-        if (x < 0 || y < 0 || z < 0) {
+    public TileEntity getTileEntity(int x, int y, int z) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return null;
         }
         return TileEntity.getFromPackedLocation(x, y, z, tileEntities);
@@ -472,8 +453,6 @@ public class Chunk implements Tickable, Viewable {
                 int x = event.getX();
                 int y = event.getY();
                 int z = event.getZ();
-                byte relativeX = Block.getChunkRelativeCoord(x);
-                byte relativeZ = Block.getChunkRelativeCoord(z);
 
                 if (event instanceof BlockBreakEvent) {
                     short toolId = 0;
@@ -503,9 +482,10 @@ public class Chunk implements Tickable, Viewable {
                     blockHandlers.getBlockHandler(event.getNewId()).onPlace(server, event, this, x, y, z, event.getNewId(), event.getNewMetadata(), event.getClickedX(), event.getClickedY(), event.getClickedZ(), playerBlockPlaceEvent.getPlayer());
                 }
 
-
-                setBlock(relativeX, y, relativeZ, event.getNewId());
-                setMetadata(relativeX, y, relativeZ, event.getNewMetadata());
+                byte relativeX = Block.getChunkRelativeCoord(x);
+                byte relativeZ = Block.getChunkRelativeCoord(z);
+                this.blocks[relativeX][y][relativeZ] = event.getNewId();
+                this.metadata[relativeX][y][relativeZ] = event.getNewMetadata();
                 setChanged();
                 Block block = getBlock(x, y, z);
                 BlockChangePacketOut blockChangePacket = new BlockChangePacketOut(x, y, z, block.id(), block.metadata());
@@ -557,10 +537,9 @@ public class Chunk implements Tickable, Viewable {
                     return;
                 }
                 int x = event.getX();
-                byte y = event.getY();
+                int y = event.getY();
                 int z = event.getZ();
-                byte id = getBlockId(x, y, z);
-                blockHandlers.getBlockHandler(id).onRightClick(server, getBlock(x, y, z), event.getPlayer());
+                blockHandlers.getBlockHandler(getBlockId(x, y, z)).onRightClick(server, getBlock(x, y, z), event.getPlayer());
             });
             scheduledBlockRightClicks.remove(ticks);
         }
@@ -676,10 +655,7 @@ public class Chunk implements Tickable, Viewable {
     }
 
     public void scheduleBlockUpdate(int x, int y, int z, long ticksInFuture) {
-        if (y < 0) {
-            return;
-        }
-        if (y >= HEIGHT) {
+        if (!areCoordsInThisChunk(x, y, z)) {
             return;
         }
         long futureTick = world.getTime() + ticksInFuture;
@@ -717,7 +693,8 @@ public class Chunk implements Tickable, Viewable {
 
         private byte[][][] blocks = new byte[Chunk.WIDTH][Chunk.HEIGHT][Chunk.WIDTH];
         private byte[][][] metadata = new byte[Chunk.WIDTH][Chunk.HEIGHT][Chunk.WIDTH];
-        private byte[][][] blockAndSkyLight = new byte[Chunk.WIDTH][Chunk.HEIGHT][Chunk.WIDTH];
+        private byte[][][] skyLight = new byte[Chunk.WIDTH][Chunk.HEIGHT][Chunk.WIDTH];
+        private byte[][][] blockLight = new byte[Chunk.WIDTH][Chunk.HEIGHT][Chunk.WIDTH];
 
         public Builder(MinecraftServer server, World world, int x, int z) {
             this.server = server;
@@ -734,10 +711,11 @@ public class Chunk implements Tickable, Viewable {
             return block(x, y, z, id, metadata, (byte) 15, (byte) 15);
         }
 
-        public Builder block(byte x, int y, byte z, byte id, byte metadata, byte blockLight, byte skyLight) {
+        public Builder block(byte x, int y, byte z, byte id, byte metadata, byte skyLight, byte blockLight) {
             blocks[x][y][z] = id;
             this.metadata[x][y][z] = metadata;
-            blockAndSkyLight[x][y][z] = (byte)(blockLight & 15 << 4 | skyLight & 15);
+            this.skyLight[x][y][z] = skyLight;
+            this.blockLight[x][y][z] = blockLight;
             return this;
         }
 

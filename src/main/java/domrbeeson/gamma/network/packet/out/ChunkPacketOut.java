@@ -29,9 +29,9 @@ public class ChunkPacketOut extends PacketOut {
         byte[] chunkData = new byte[DATA_SIZE];
         int index;
         byte id, metadata, skyLight, blockLight;
-        for (byte x = 0; x < Chunk.WIDTH; x++) {
+        for (int x = blockStartX; x < blockStartX + Chunk.WIDTH; x++) {
             for (int y = 0; y < Chunk.HEIGHT; y++) {
-                for (byte z = 0; z < Chunk.WIDTH; z++) {
+                for (int z = blockStartZ; z < blockStartZ + Chunk.WIDTH; z++) {
                     index = NotchianWorldFormat.getBlockIndex(x, y, z);
                     id = chunk.getBlockId(x, y, z);
                     metadata = chunk.getBlockMetadata(x, y, z);

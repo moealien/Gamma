@@ -48,7 +48,7 @@ public class FarmlandBlockHandler implements BlockHandler {
                 if (metadata > 0) {
                     chunk.setBlock(x, y, z, Material.FARMLAND.blockId, (byte) (metadata - 1));
                 } else if (metadata == 0 && chunk.getBlockId(x, y + 1, z) != Material.WHEAT_CROPS.blockId) {
-                    chunk.setBlock(x, y, z, Material.DIRT.blockId);
+                    chunk.setBlock(x, y, z, Material.DIRT);
                 }
             } else {
                 chunk.setBlock(x, y, z, Material.FARMLAND.blockId, (byte) 7);

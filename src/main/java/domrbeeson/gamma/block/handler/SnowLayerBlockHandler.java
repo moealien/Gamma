@@ -2,7 +2,7 @@ package domrbeeson.gamma.block.handler;
 
 import domrbeeson.gamma.MinecraftServer;
 import domrbeeson.gamma.block.Block;
-import domrbeeson.gamma.world.Chunk;
+import domrbeeson.gamma.item.Material;
 
 public class SnowLayerBlockHandler implements BlockHandler {
 
@@ -12,14 +12,13 @@ public class SnowLayerBlockHandler implements BlockHandler {
     }
 
     @Override
-    public boolean update(MinecraftServer server, Block block, long ticks) { // TODO need to fix
-        Chunk chunk = block.chunk();
+    public boolean update(MinecraftServer server, Block block, long ticks) {
         int x = block.x();
         int y = block.y();
         int z = block.z();
-        byte blockBelowId = chunk.getBlockId(x, y - 1, z);
+        byte blockBelowId = block.chunk().getBlockId(x, y - 1, z);
         if (!server.getBlockHandlers().getBlockHandler(blockBelowId).isSolid()) {
-            chunk.setBlock(x, y, z, (byte) 0);
+            block.chunk().setBlock(x, y, z, Material.AIR);
             return true;
         }
         return false;

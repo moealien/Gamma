@@ -23,11 +23,14 @@ public class GrassBlockHandler extends FarmlandBlockHandler {
     @Override
     public void randomTick(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, long tick) {
         Block blockAbove = chunk.getBlock(x, y + 1, z);
+        if (blockAbove == null) {
+            return;
+        }
         if (blockAbove.blockLight() < 4 && blockAbove.material().blockOpacity > 2) {
             if (random.nextInt(4) != 0) {
                 return;
             }
-            chunk.setBlock(x, y, z, Material.DIRT);
+//            chunk.setBlock(x, y, z, Material.DIRT); // TODO disabled until lighting works
         } else if (blockAbove.blockLight() >= 9) {
             x += random.nextInt(3) - 1;
             y += random.nextInt(5) - 3;
@@ -35,8 +38,8 @@ public class GrassBlockHandler extends FarmlandBlockHandler {
 
             if (chunk.getBlockId(x, y, z) == Material.DIRT.blockId) {
                 blockAbove = chunk.getBlock(x, y + 1, z);
-                if (blockAbove.blockLight() >= 4 && blockAbove.material().blockOpacity <= 2) {
-                    chunk.setBlock(x, y, z, Material.GRASS);
+                if (blockAbove != null && blockAbove.blockLight() >= 4 && blockAbove.material().blockOpacity <= 2) {
+//                    chunk.setBlock(x, y, z, Material.GRASS); // TODO disabled until lighting works
                 }
             }
         }

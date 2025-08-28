@@ -44,7 +44,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     private final String name;
     private final WorldFormat format;
     private final TerrainGenerator generator;
-    private final long timeInFile;
+    private final long worldTime;
     private final RegisteredEventListener<PlayerMoveEvent> playerMoveListener;
     private final Set<Chunk> saveChunks = new HashSet<>();
 
@@ -61,7 +61,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
 
         format.load(this);
 
-        this.timeInFile = 0; // TODO load from world format
+        this.worldTime = 0; // TODO load from world format
         this.time = 0;
 
         scheduler.scheduleTask(new TimeUpdaterTask(this));
@@ -169,16 +169,31 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         return getChunk(x >> 4, z >> 4).getBlockMetadata(x, y, z);
     }
 
-    public boolean setBlock(int x, int y, int z, Material material) {
-        if (!material.block) {
-            return false;
-        }
-        return setBlock(x, y, z, material.blockId, (byte) material.metadata);
+    public byte getSkyLight(int x, int y, int z) {
+        return getChunk(x >> 4, z >> 4).getSkyLight(x, y, z);
     }
 
-    public final boolean setBlock(int x, int y, int z, byte id, byte metadata) {
-        getChunk(x >> 4, z >> 4).setBlock(x, y, z, id, metadata);
-        return true;
+    public byte getBlockLight(int x, int y, int z) {
+        return getChunk(x >> 4, z >> 4).getBlockLight(x, y, z);
+    }
+
+    public void setBlock(int x, int y, int z, Material material) {
+        if (!material.block) {
+            return;
+        }
+        setBlock(x, y, z, material.blockId, (byte) material.metadata);
+    }
+
+    public final void setBlock(int x, int y, int z, byte id, byte metadata) {
+        getChunk(x >> 4, z >> 4).setBlock(x, y, z, id, metadata, true);
+    }
+
+    public void scheduleBlockUpdate(int x, int y, int z) {
+        scheduleBlockUpdate(x, y, z, 1);
+    }
+
+    public void scheduleBlockUpdate(int x, int y, int z, int ticksInFuture) {
+        getChunk(x >> 4, z >> 4).scheduleBlockUpdate(x, y, z, ticksInFuture);
     }
 
     @Nullable
@@ -194,7 +209,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     @Nullable
     public TileEntity getTileEntity(int x, int y, int z) {
         Chunk chunk = getChunk(x >> 4, z >> 4);
-        return chunk.getTileEntity(Block.getChunkRelativeCoord(x), y, Block.getChunkRelativeCoord(z));
+        return chunk.getTileEntity(x, y, z);
     }
 
     public boolean isChunkLoaded(int x, int z) {
@@ -204,7 +219,7 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
     // https://minecraft.fandom.com/wiki/Tick#Game_process
     @Override
     public void tick(long ticks) {
-        time = timeInFile + ticks;
+        time = worldTime + ticks;
         scheduler.tick(ticks);
         List<Chunk> chunks = new ArrayList<>(loadedChunks.values());
         List<Chunk> staleChunks = new ArrayList<>();

@@ -42,7 +42,7 @@ public class ChestBlockHandler extends TileEntityBlockHandler<ChestTileEntity> {
 
     @Override
     public boolean onRightClick(MinecraftServer server, Block block, Player player) {
-        if (server.getBlockHandlers().getBlockHandler(block.chunk().getBlock(block.x(), block.y() + 1, block.z()).id()).isSolid()) {
+        if (server.getBlockHandlers().getBlockHandler(block.chunk().getBlockId(block.x(), block.y() + 1, block.z())).isSolid()) {
             return false;
         }
         ChestTileEntity tile = getTileEntity(block.chunk(), block.x(), block.y(), block.z());

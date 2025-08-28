@@ -9,10 +9,10 @@ public class PlayerRightClickBlockEvent extends CancellableEvent implements Even
 
     private final Player player;
     private final int x, z;
-    private final byte y;
+    private final int y;
     private final Item heldItem;
 
-    public PlayerRightClickBlockEvent(Player player, int x, byte y, int z, Item heldItem) {
+    public PlayerRightClickBlockEvent(Player player, int x, int y, int z, Item heldItem) {
         this.player = player;
         this.x = x;
         this.y = y;
@@ -28,7 +28,7 @@ public class PlayerRightClickBlockEvent extends CancellableEvent implements Even
         return x;
     }
 
-    public byte getY() {
+    public int getY() {
         return y;
     }
 

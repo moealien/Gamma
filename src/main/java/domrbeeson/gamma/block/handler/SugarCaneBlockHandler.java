@@ -25,11 +25,6 @@ public class SugarCaneBlockHandler extends PlantStackBlockHandler {
     }
 
     @Override
-    public boolean isSolid() {
-        return true ;
-    }
-
-    @Override
     public List<Item> getDrops(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, short toolId) {
         return DROPS;
     }
@@ -41,17 +36,14 @@ public class SugarCaneBlockHandler extends PlantStackBlockHandler {
 
     @Override
     public void randomTick(MinecraftServer server, Chunk chunk, int x, int y, int z, byte id, byte metadata, long tick) {
-        byte relativeX = Block.getChunkRelativeCoord(x);
-        byte relativeZ = Block.getChunkRelativeCoord(z);
-
-        if (chunk.getBlockId(relativeX, y + 1, relativeZ) != id && chunk.getBlockId(relativeX, y - GROW_HEIGHT + 1, relativeZ) != id) {
+        if (chunk.getBlockId(x, y + 1, z) != id && chunk.getBlockId(x, y - GROW_HEIGHT + 1, z) != id) {
             // Sugar cane grows after receiving 16 random ticks
             metadata++;
             if (metadata > 15) {
                 chunk.setBlock(x, y + 1, z, id, (byte) 0);
             } else {
                 // TODO does sugar cane do a block update when it changes metadata?
-                chunk.directlySetBlock(relativeX, y, relativeZ, id, metadata);
+                chunk.directlySetBlock(x, y, z, id, metadata);
             }
         } else if (!canPlace(chunk, x, y, z)) {
             breakStack(chunk.getBlock(x, y, z));
@@ -62,7 +54,7 @@ public class SugarCaneBlockHandler extends PlantStackBlockHandler {
 
     @Override
     public boolean canPlace(Chunk chunk, int x, int y, int z) {
-        byte blockBelowId = chunk.getBlockId(x, y - 1, z);
+        byte blockBelowId = chunk.getWorld().getBlockId(x, y - 1, z);
         for (byte id : GROW_ON_BLOCKS) {
             if (id == blockBelowId) {
                 return bottomBlockHasWater(chunk, x, y, z);

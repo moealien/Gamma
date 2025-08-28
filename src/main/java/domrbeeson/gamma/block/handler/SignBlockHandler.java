@@ -10,6 +10,7 @@ import domrbeeson.gamma.item.Item;
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.player.Player;
 import domrbeeson.gamma.world.Chunk;
+import domrbeeson.gamma.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -62,40 +63,35 @@ public class SignBlockHandler extends TileEntityBlockHandler<SignTileEntity> {
         int x = block.x();
         int y = block.y();
         int z = block.z();
-        switch (block.id()) {
-            case 63 -> {
+        switch (block.material()) {
+            case SIGN_POST -> {
                 if (!blockHandlers.getBlockHandler(chunk.getBlockId(x, y - 1, z)).isSolid()) {
                     chunk.breakBlock(x, y, z);
                     return true;
                 }
             }
-            case 68 -> {
-                Chunk checkChunk;
+            case WALL_SIGN -> {
                 switch (Direction.getDirectionFromMetadata(block.metadata())) { // Could just use numbers but getting the Direction is more readable
                     case SOUTH:
-                        checkChunk = chunk.getWorld().getLoadedChunk(x >> 4, (z - 1) >> 4);
-                        if (checkChunk != null && !blockHandlers.getBlockHandler(checkChunk.getBlockId(x, y, z - 1)).isSolid()) {
+                        if (blockHandlers.getBlockHandler(chunk.getBlockId(x, y, z - 1)).isSolid()) {
                             chunk.breakBlock(x, y, z);
                             return true;
                         }
                         break;
                     case WEST:
-                        checkChunk = chunk.getWorld().getLoadedChunk((x + 1) >> 4, z >> 4);
-                        if (checkChunk != null && !blockHandlers.getBlockHandler(checkChunk.getBlockId(x + 1, y, z)).isSolid()) {
+                        if (blockHandlers.getBlockHandler(chunk.getBlockId(x + 1, y, z)).isSolid()) {
                             chunk.breakBlock(x, y, z);
                             return true;
                         }
                         break;
                     case EAST:
-                        checkChunk = chunk.getWorld().getLoadedChunk((x - 1) >> 4, z >> 4);
-                        if (checkChunk != null && !blockHandlers.getBlockHandler(checkChunk.getBlockId(x - 1, y, z)).isSolid()) {
+                        if (blockHandlers.getBlockHandler(chunk.getBlockId(x - 1, y, z)).isSolid()) {
                             chunk.breakBlock(x, y, z);
                             return true;
                         }
                         break;
                     default:
-                        checkChunk = chunk.getWorld().getLoadedChunk(x >> 4, (z + 1) >> 4);
-                        if (checkChunk != null && !blockHandlers.getBlockHandler(checkChunk.getBlockId(x, y, z + 1)).isSolid()) {
+                        if (blockHandlers.getBlockHandler(chunk.getBlockId(x, y, z + 1)).isSolid()) {
                             chunk.breakBlock(x, y, z);
                             return true;
                         }

@@ -170,7 +170,7 @@ public class FluidBlockHandler implements BlockHandler {
         }
 
         long nextUpdate = getTicksUntilNextUpdate(ticks, world.getFormat().getDimension());
-        if (getSourceBlocksAdjacent(chunk, x, y, z) >= 2) {
+        if (getSourceBlocksAdjacent(world, x, y, z) >= 2) {
             chunk.setBlock(x, y, z, sourceBlockId, (byte) 0, true);
         } else {
             chunk.setBlock(x, y, z, flowingBlockId, newHeight, true);
@@ -189,12 +189,24 @@ public class FluidBlockHandler implements BlockHandler {
         return updateFrequency - difference;
     }
 
-    private int getSourceBlocksAdjacent(Chunk chunk, int x, int y, int z) {
+    private int getSourceBlocksAdjacent(World world, int x, int y, int z) {
         int sources = 0;
-        sources += chunk.getBlockId(x + 1, y, z) == sourceBlockId ? 1 : 0;
-        sources += chunk.getBlockId(x, y, z + 1) == sourceBlockId ? 1 : 0;
-        sources += chunk.getBlockId(x - 1, y, z) == sourceBlockId ? 1 : 0;
-        sources += chunk.getBlockId(x, y, z - 1) == sourceBlockId ? 1 : 0;
+        Chunk chunk;
+        chunk = world.getLoadedChunk((x + 1) << 4, z << 4);
+        if (chunk != null) {
+            sources += chunk.getBlockId(x + 1, y, z) == sourceBlockId ? 1 : 0;
+        }
+        chunk = world.getLoadedChunk(x << 4, (z + 1) << 4);
+        if (chunk != null) {
+            sources += chunk.getBlockId(x, y, z + 1) == sourceBlockId ? 1 : 0;
+        }
+        chunk = world.getLoadedChunk((x - 1) << 4, z << 4);
+        if (chunk != null) {
+            sources += chunk.getBlockId(x - 1, y, z) == sourceBlockId ? 1 : 0;
+        }
+        if (chunk != null) {
+            sources += chunk.getBlockId(x, y, z - 1) == sourceBlockId ? 1 : 0;
+        }
         return sources;
     }
 
