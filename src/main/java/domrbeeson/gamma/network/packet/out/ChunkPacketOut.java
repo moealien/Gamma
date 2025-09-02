@@ -3,7 +3,6 @@ package domrbeeson.gamma.network.packet.out;
 import domrbeeson.gamma.network.packet.Packet;
 import domrbeeson.gamma.network.packet.PacketOut;
 import domrbeeson.gamma.world.Chunk;
-import domrbeeson.gamma.world.format.NotchianWorldFormat;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,6 +11,9 @@ import java.util.zip.Deflater;
 public class ChunkPacketOut extends PacketOut {
 
     private static final int DATA_SIZE = (int) Math.round(Chunk.WIDTH * Chunk.HEIGHT * Chunk.WIDTH * 2.5);
+    private static final int BLOCK_METADATA_OFFSET = 32768;
+    private static final int SKY_LIGHT_OFFSET = 49152;
+    private static final int BLOCK_LIGHT_OFFSET = 65536;
 
     private final int blockStartX, blockStartZ;
     private final byte[] compressedChunkData;
@@ -26,31 +28,28 @@ public class ChunkPacketOut extends PacketOut {
         blockStartX = chunk.getChunkX() * Chunk.WIDTH;
         blockStartZ = chunk.getChunkZ() * Chunk.WIDTH;
 
+        byte[][][] blocks = chunk.getRawBlocks();
+        byte[][][] metadata = chunk.getRawBlockMetadata();
+        byte[][][] skyLight = chunk.getRawSkyLight();
+        byte[][][] blockLight = chunk.getRawBlockLight();
+        byte x, z;
+        int y;
         byte[] chunkData = new byte[DATA_SIZE];
-        int index;
-        byte id, metadata, skyLight, blockLight;
-        for (int x = blockStartX; x < blockStartX + Chunk.WIDTH; x++) {
-            for (int y = 0; y < Chunk.HEIGHT; y++) {
-                for (int z = blockStartZ; z < blockStartZ + Chunk.WIDTH; z++) {
-                    index = NotchianWorldFormat.getBlockIndex(x, y, z);
-                    id = chunk.getBlockId(x, y, z);
-                    metadata = chunk.getBlockMetadata(x, y, z);
-                    blockLight = chunk.getBlockLight(x, y, z);
-                    skyLight = chunk.getSkyLight(x, y, z);
+        for (int i = 0; i < 32768; i++) {
+            x = (byte) (i >> 11);
+            y = i & 127;
+            z = (byte) ((i >> 7) & 15);
 
-                    // TODO this needs fixing
-                    int halfIndex = (int) Math.floor(index / 2d);
-                    if (halfIndex % 2 == 0) {
-                        chunkData[32768 + halfIndex] = setNibble(metadata, chunkData[32768 + halfIndex]);
-                        chunkData[49152 + halfIndex] = setNibble(blockLight, chunkData[49152 + halfIndex]);
-                        chunkData[65536 + halfIndex] = setNibble(skyLight, chunkData[65536 + halfIndex]);
-                    } else {
-                        chunkData[32768 + halfIndex] = setNibble(chunkData[32768 + halfIndex], metadata);
-                        chunkData[49152 + halfIndex] = setNibble(chunkData[49152 + halfIndex], blockLight);
-                        chunkData[65536 + halfIndex] = setNibble(chunkData[65536 + halfIndex], skyLight);
-                    }
-                    chunkData[index] = id;
-                }
+            chunkData[i] = blocks[x][y][z];
+            int i2 = i >> 1;
+            if ((i & 1) == 0) {
+                chunkData[i2 + BLOCK_METADATA_OFFSET] = setLowerNibble(chunkData[i2 + BLOCK_METADATA_OFFSET], metadata[x][y][z]);
+                chunkData[i2 + SKY_LIGHT_OFFSET] = setLowerNibble(chunkData[i2 + SKY_LIGHT_OFFSET], skyLight[x][y][z]);
+                chunkData[i2 + BLOCK_LIGHT_OFFSET] = setLowerNibble(chunkData[i2 + BLOCK_LIGHT_OFFSET], blockLight[x][y][z]);
+            } else {
+                chunkData[i2 + BLOCK_METADATA_OFFSET] = setUpperNibble(chunkData[i2 + BLOCK_METADATA_OFFSET], metadata[x][y][z]);
+                chunkData[i2 + SKY_LIGHT_OFFSET] = setUpperNibble(chunkData[i2 + SKY_LIGHT_OFFSET], skyLight[x][y][z]);
+                chunkData[i2 + BLOCK_LIGHT_OFFSET] = setUpperNibble(chunkData[i2 + BLOCK_LIGHT_OFFSET], blockLight[x][y][z]);
             }
         }
 
@@ -65,8 +64,12 @@ public class ChunkPacketOut extends PacketOut {
         }
     }
 
-    private byte setNibble(byte upper, byte lower) {
-        return (byte)(lower << 4 | (upper & 15));
+    private byte setUpperNibble(byte data, byte upper) {
+        return (byte)(data | upper & 15);
+    }
+
+    private byte setLowerNibble(byte data, byte lower) {
+        return (byte)(lower << 4 | data & 15);
     }
 
     @Override

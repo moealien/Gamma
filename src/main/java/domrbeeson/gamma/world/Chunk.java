@@ -672,6 +672,22 @@ public class Chunk implements Tickable, Viewable {
         return chunkIndex == getIndex(x, z);
     }
 
+    public byte[][][] getRawBlocks() {
+        return blocks;
+    }
+
+    public byte[][][] getRawBlockMetadata() {
+        return metadata;
+    }
+
+    public byte[][][] getRawSkyLight() {
+        return skyLight;
+    }
+
+    public byte[][][] getRawBlockLight() {
+        return blockLight;
+    }
+
     public static Collection<Chunk> getPlayerViewingChunks(Player player) {
         synchronized (PLAYERS_VIEWING_CHUNKS) {
             return PLAYERS_VIEWING_CHUNKS.getOrDefault(player, new HashSet<>());

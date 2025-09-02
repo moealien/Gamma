@@ -147,6 +147,10 @@ public class World extends EventGroup<Event.WorldEvent> implements Tickable, Unl
         return loadedChunks.computeIfAbsent(index, _ -> new Chunk(new Chunk.Builder(server, this, chunkX, chunkZ)));
     }
 
+    public Chunk getChunk(Pos pos) {
+        return getChunk(pos.getChunkX(), pos.getChunkZ());
+    }
+
     public Collection<Chunk> getLoadedChunks() {
         return loadedChunks.values();
     }

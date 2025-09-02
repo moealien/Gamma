@@ -42,8 +42,6 @@ public class AlphaWorldFormat extends NotchianWorldFormat {
                     index = NotchianWorldFormat.getBlockIndex(x, y, z);
 
                     int metaIndex = (int) Math.floor(index / 2d);
-//                    System.out.println("Reading index " + index + " (meta index " + metaIndex + ", is even? " + (index % 2 == 0) + ")");
-                    // TODO fix lighting
                     if (metaIndex % 2 == 0) {
                         meta = (byte) (nbtMetadata[metaIndex] >> 4);
                         bl = (byte) (nbtBlockLight[metaIndex] >> 4);
@@ -54,7 +52,8 @@ public class AlphaWorldFormat extends NotchianWorldFormat {
                         sky = (byte) (nbtSkyLight[metaIndex] & 15);
                     }
 
-                    builder.block(x, y, z, nbtBlocks[index], meta, (byte) 15, (byte) 15);
+//                    builder.block(x, y, z, nbtBlocks[index], meta, sky, bl); // TODO the world file has weird lighting so for now just set it all to 15
+                    builder.block(x, y, z, nbtBlocks[index], meta, (byte) 15, bl);
                 }
             }
         }

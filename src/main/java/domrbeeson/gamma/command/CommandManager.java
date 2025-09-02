@@ -28,6 +28,8 @@ public final class CommandManager {
         register(new UnbanCommand());
         register(new WorldCommand(server.getWorldManager()));
         register(new YCommand());
+
+        register(new LightCommand());
     }
 
     public void register(Command command) {

@@ -30,6 +30,9 @@ public class PlayerPositionAndLookPacketIn extends WorldPacketIn {
     @Override
     public void handle() {
         Player player = getServer().getPlayerManager().get(getConnection());
+        if (player == null) {
+            return;
+        }
         Pos newPos = new Pos(x, y, z, yaw, pitch);
         if (!player.getPos().equals(newPos)) {
             player.updatePos(newPos);
