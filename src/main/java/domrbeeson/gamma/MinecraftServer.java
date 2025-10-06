@@ -16,6 +16,7 @@ import domrbeeson.gamma.task.tasks.TpsTask;
 import domrbeeson.gamma.world.World;
 import domrbeeson.gamma.world.WorldManager;
 import domrbeeson.gamma.world.format.AlphaWorldFormat;
+import domrbeeson.gamma.world.terrain.AlienGenerator;
 import domrbeeson.gamma.world.terrain.DebugGenerator;
 
 public final class MinecraftServer extends EventGroup<Event.GlobalEvent> implements Stoppable {
@@ -37,7 +38,10 @@ public final class MinecraftServer extends EventGroup<Event.GlobalEvent> impleme
     private long tick = 0;
 
     public MinecraftServer() throws InterruptedException {
-        World defaultWorld = worldManager.loadOrCreateWorld(SERVER_SETTINGS.getDefaultWorldName(), new AlphaWorldFormat(), new DebugGenerator());
+//        World defaultWorld = worldManager.loadOrCreateWorld(SERVER_SETTINGS.getDefaultWorldName(), new AlphaWorldFormat(), new DebugGenerator());
+
+        World defaultWorld = worldManager.loadOrCreateWorld(SERVER_SETTINGS.getDefaultWorldName(), new AlphaWorldFormat(), new AlienGenerator());
+
         if (defaultWorld != null) {
             defaultWorld.setViewDistance(SERVER_SETTINGS.getViewDistance());
             worldManager.setDefaultWorld(defaultWorld);
