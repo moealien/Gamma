@@ -2,7 +2,6 @@ package domrbeeson.gamma.world.terrain;
 
 import domrbeeson.gamma.item.Material;
 import domrbeeson.gamma.world.Chunk;
-import domrbeeson.gamma.utils.OpenSimplex.OpenSimplex2S;
 
 import java.util.Random;
 
@@ -21,7 +20,7 @@ public class AlienGenerator implements TerrainGenerator {
 
 //              make SINE wave hills along x where height of hill is y
                 int sineYMaxHeight = 12;
-                int sineY = steppedSine(x, Chunk.WIDTH, 2, sineYMaxHeight);
+                int sineY = steppedSine(x, Chunk.WIDTH, sineYMaxHeight);
 
 //              grass/dirt
                 chunk.block(x, sineY, z, Material.GRASS.blockId);
@@ -44,8 +43,9 @@ public class AlienGenerator implements TerrainGenerator {
 //                  todo gnarlier
                 }
 
-//                todo investigate this
+//                todo investigate noise
 
+//                    var hillsNoise = OpenSimplex2S.noise3_ImproveXZ(124556, (double) x, (double) y, (double) z);
 
 //                todo chance to spawn floating ominous spheres
 //                todo chunk variants (alien biomes)
@@ -57,12 +57,12 @@ public class AlienGenerator implements TerrainGenerator {
 
 
 
-    private static int steppedSine(int stepIndex, int totalSteps, int min, int max) {
+    private static int steppedSine(int stepIndex, int totalSteps, int max) {
         // normalised sine [-1, 1]
         double angle = 2 * Math.PI * stepIndex / totalSteps;
         double sine = Math.sin(angle);
 
-        double scaled = min + (sine + 1) * (max - min) / 2;
+        double scaled = 2 + (sine + 1) * (max - 2) / 2;
 
         return (int) Math.round(scaled); // step int
     }
