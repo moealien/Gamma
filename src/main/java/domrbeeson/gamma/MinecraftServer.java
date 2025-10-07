@@ -39,7 +39,6 @@ public final class MinecraftServer extends EventGroup<Event.GlobalEvent> impleme
 
     public MinecraftServer() throws InterruptedException {
 //        World defaultWorld = worldManager.loadOrCreateWorld(SERVER_SETTINGS.getDefaultWorldName(), new AlphaWorldFormat(), new DebugGenerator());
-
         World defaultWorld = worldManager.loadOrCreateWorld(SERVER_SETTINGS.getDefaultWorldName(), new AlphaWorldFormat(), new AlienGenerator());
 
         if (defaultWorld != null) {
@@ -60,7 +59,7 @@ public final class MinecraftServer extends EventGroup<Event.GlobalEvent> impleme
             scheduler.tick(tick);
             worldManager.tick(tick);
 
-            if (tick % 20 == 0) {
+            if (tick % 64 == 0) {
                 System.out.println("Memory [" + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1000000) + "MB/" + (Runtime.getRuntime().totalMemory() / 1000000) + "MB] [" + (Runtime.getRuntime().maxMemory() / 1000000) + "MB max]");
             }
 
